@@ -46,8 +46,64 @@
   justify-content: center;
   gap: var(--space-2);
   min-height: 80px;
+  padding: var(--space-12) var(--space-8);
 }
+.row-head .cell-day-head.is-today { gap: var(--space-4); } /* Figma Day Header Type=Today: gap 4 */
+.day-head-weekday, .cell-head-label { color: var(--text-secondary); }
+.is-weekend { color: var(--text-subtle); }
+.is-weekend .day-head-weekday { color: var(--text-subtle); }
 .cell-time { justify-content: center; }
+
+/* Time Cell Day=Today: time left, play/stop right (pad 0 12, gap 8) */
+.cell-today {
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: 0 var(--space-12);
+}
+.seconds { color: var(--text-secondary); }
+
+/* Button Icon, Size M: 32×32, radius 10, icon 16 */
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-10);
+  background: var(--bg-control);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.icon-button:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.icon-button:active { background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
+.icon-button:focus-visible { outline-offset: 2px; border-radius: var(--radius-10); }
+.icon-button.is-primary { background-color: var(--bg-accent); color: var(--text-on-accent); }
+.icon-button.is-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
+
+/* Add task — Input Style=Ghost */
+.add-task {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 32px;
+  margin-top: var(--space-16);
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-10);
+}
+.add-task:hover { background: var(--state-hover); }
+.add-task:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; background: none; }
+.add-task-icon { color: var(--text-secondary); flex: none; }
+.add-task-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--text-primary);
+}
+.add-task-input::placeholder { color: var(--text-secondary); }
+.add-task-hint { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--text-subtle); }
 .cell-total { justify-content: flex-end; }
 
 .is-today { background: var(--bg-today); }
