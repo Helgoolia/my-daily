@@ -1,5 +1,6 @@
 import {
   IconArrowBarLeft,
+  IconCheck,
   IconCalendarPlus,
   IconChevronDown,
   IconEye,
@@ -189,8 +190,9 @@ function SortMenu({ value, lang, onChange }: { value: Settings['sort']; lang: Se
         <ul className="menu" role="menu">
           {SORTS.map((s) => (
             <li key={s} role="none">
-              <button type="button" role="menuitemradio" aria-checked={s === value} className="menu-item t-body-s" onClick={() => { onChange(s); setOpen(false); }}>
-                {label(s)}
+              <button type="button" role="menuitemradio" aria-checked={s === value} className="menu-item" onClick={() => { onChange(s); setOpen(false); }}>
+                <span className="menu-item-label t-body-m-medium">{label(s)}</span>
+                {s === value && <IconCheck size={16} className="menu-item-check" aria-hidden />}
               </button>
             </li>
           ))}

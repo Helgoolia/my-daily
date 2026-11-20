@@ -130,7 +130,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                           <span className="seconds">:{String(Math.floor(minutes * 60 + 1e-6) % 60).padStart(2, '0')}</span>
                         </span>
                       ) : (
-                        <span className={`t-numeric-m ${minutes === 0 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>
+                        <span className={`t-numeric-m ${minutes < 1 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>
                       )}
                       <button
                         type="button"
@@ -145,7 +145,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                 }
                 return (
                   <div key={date} className="cell cell-time" role="cell">
-                    {isFuture ? null : minutes > 0 ? (
+                    {isFuture ? null : minutes >= 1 ? (
                       <span className="t-numeric-m">{formatMinutes(minutes)}</span>
                     ) : (
                       <span className="t-numeric-m cell-subtle">—</span>

@@ -27,6 +27,12 @@ export function AddTask({ lang, onAdd }: { lang: Settings['language']; onAdd: (n
         className="add-task-input t-body-m"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            setValue('');
+            e.currentTarget.blur();
+          }
+        }}
         placeholder={t(lang, 'nameATask')}
         aria-label={t(lang, 'nameATask')}
         maxLength={80}

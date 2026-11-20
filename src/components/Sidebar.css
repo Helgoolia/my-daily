@@ -76,9 +76,10 @@
   border: 0;
   border-radius: var(--radius-10);
   background: none;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   cursor: pointer;
 }
+.ghost-icon:hover, .ghost-icon:active { color: var(--text-primary); }
 .ghost-icon.is-small { width: 28px; height: 28px; border-radius: var(--radius-8); }
 .ghost-icon:hover { background: var(--state-hover); }
 .ghost-icon:active { background: var(--state-pressed); }
@@ -108,20 +109,22 @@
   gap: var(--space-4);
   height: 28px;
   padding: 0 var(--space-8);
-  border: 0;
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-8);
   background: var(--bg-control);
   color: var(--text-primary);
   cursor: pointer;
 }
-.secondary-button:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
-.secondary-button.is-pressed { background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
+/* Button Secondary S — hover/pressed: state layer + border/strong (Figma: Button) */
+.secondary-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.secondary-button:active,
+.secondary-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
 .menu {
   position: absolute;
   top: calc(100% + var(--space-4));
   left: 0;
   z-index: 20;
-  min-width: 200px;
+  min-width: 220px;
   margin: 0;
   padding: var(--space-4);
   list-style: none;
@@ -130,8 +133,11 @@
   background: var(--bg-elevated);
   box-shadow: var(--shadow-popover);
 }
+/* Menu Item — Figma: _Base/Menu Item (padding 8, gap 8, radius 8, label Body/M-Medium, check slot 16 on the right) */
 .menu-item {
   display: flex;
+  align-items: center;
+  gap: var(--space-8);
   width: 100%;
   padding: var(--space-8);
   border: 0;
@@ -141,8 +147,9 @@
   text-align: left;
   cursor: pointer;
 }
-.menu-item:hover { background: var(--state-hover); }
-.menu-item[aria-checked='true'] { font-weight: 500; }
+.menu-item:hover, .menu-item:focus-visible { background: var(--state-hover); }
+.menu-item-label { flex: 1; }
+.menu-item-check { flex: none; color: var(--text-primary); }
 
 /* Preferences: theme + language segmented controls */
 .preferences { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-16); border-top: 1px solid var(--border-divider); }
@@ -161,4 +168,7 @@
 }
 .segment.is-icon { padding: 0; }
 .segment:hover { color: var(--text-primary); }
-.segment.is-selected { background: var(--bg-control); color: var(--text-primary); }
+.segment { border: 1px solid transparent; }
+.segment:hover { background: var(--state-hover); }
+/* Segment Selected — Figma: bg/elevated + 1 px border/default */
+.segment.is-selected { background: var(--bg-elevated); border-color: var(--border-default); color: var(--text-primary); }

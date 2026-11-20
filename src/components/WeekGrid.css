@@ -63,7 +63,9 @@
 }
 .seconds { color: var(--text-secondary); }
 
-/* Button Icon, Size M: 32×32, radius 10, icon 16 */
+/* Button Icon, Size M — Figma: Button Icon (32×32, radius 10, icon 16)
+   Secondary: bg/control + 1 px border/default; hover/pressed add the state layer and border/strong.
+   Primary: bg/accent, icon on-accent; hover/pressed add the on-accent state layer. */
 .icon-button {
   flex: none;
   display: inline-grid;
@@ -71,17 +73,17 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 0;
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-10);
   background: var(--bg-control);
   color: var(--text-primary);
   cursor: pointer;
 }
-.icon-button:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
-.icon-button:active { background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
-.icon-button:focus-visible { outline-offset: 2px; border-radius: var(--radius-10); }
-.icon-button.is-primary { background-color: var(--bg-accent); color: var(--text-on-accent); }
+.icon-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.icon-button:active { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
+.icon-button.is-primary { border-color: transparent; background-color: var(--bg-accent); color: var(--text-on-accent); }
 .icon-button.is-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
+.icon-button.is-primary:active { background-image: linear-gradient(var(--state-pressed-on-accent), var(--state-pressed-on-accent)); }
 
 /* Add task — Input Style=Ghost */
 .add-task {
