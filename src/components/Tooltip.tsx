@@ -37,23 +37,19 @@ export function Tooltip({
       setPos({ left: row.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
       return;
     }
-    if (placement === 'right') {
-      setPos({ left: r.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
-      return;
-    }
     const below = placement === 'below' || r.top < 48; // flip down when there is no room above
     const left = Math.min(Math.max(r.left + r.width / 2, 8 + 60), window.innerWidth - 8 - 60);
     setPos(below
       ? { left, top: r.bottom + 8, transform: 'translateX(-50%)' }
       : { left, top: r.top - 8, transform: 'translate(-50%, -100%)' });
   };
-  const timer = useRef<number | undefined>(undefined);
+  const delayRef = useRef<number | undefined>(undefined);
   const showLater = (el: HTMLElement) => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => show(el), 500);
+    window.clearTimeout(delayRef.current);
+    delayRef.current = window.setTimeout(() => show(el), 500);
   };
   const hide = () => {
-    window.clearTimeout(timer.current);
+    window.clearTimeout(delayRef.current);
     setPos(null);
   };
 
