@@ -32,7 +32,18 @@
 .logo.is-active .logo-ring { fill: var(--brand-mark); }
 .logo .logo-word { fill: var(--text-primary); }
 
-.sidebar-tasks { display: flex; flex-direction: column; gap: var(--space-12); flex: 1; min-height: 0; overflow-y: auto; }
+.sidebar-tasks { display: flex; flex-direction: column; gap: var(--space-12); flex: 1; min-height: 0; }
+.task-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-right: calc(-1 * var(--space-8)); /* the thin scrollbar sits in the sidebar padding, not over the totals */
+  padding-right: var(--space-8);
+  scrollbar-gutter: stable;
+}
 .section-header { display: flex; align-items: baseline; gap: var(--space-8); margin: 0; font: inherit; }
 .section-count { color: var(--text-secondary); }
 

@@ -100,6 +100,8 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
           <span>{t(lang, 'allTime')}</span>
         </div>
 
+        {/* Only the lists scroll; title, sort and column labels stay put (Figma: Sidebar / Tasks) */}
+        <div className="task-scroll">
         <ul className="task-list">{visible.map(row)}</ul>
 
         {hidden.length > 0 && (
@@ -111,6 +113,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             {hiddenOpen && <ul className="task-list">{hidden.map(row)}</ul>}
           </div>
         )}
+        </div>
       </section>
 
       <div className="preferences">

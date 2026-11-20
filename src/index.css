@@ -24,3 +24,9 @@ body {
   min-width: 0;
   padding: var(--space-16);
 }
+
+/* Scrollbar — Figma: Components / Scrollbar. Native scrolling, styled: thin, token colours. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
