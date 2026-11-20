@@ -1,0 +1,57 @@
+.week {
+  padding: var(--space-24);
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
+}
+.week-header h1 { margin: 0; }
+.week-range { margin: var(--space-4) 0 0; color: var(--text-secondary); }
+
+.week-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: var(--space-2);
+}
+.week-summary-label { color: var(--text-secondary); }
+
+/* Grid: Task 280 · 6 days fill · Today 140 · Total 100 (see Figma) */
+.row {
+  display: grid;
+  grid-template-columns: 280px repeat(7, minmax(64px, 1fr)) 100px;
+  border-bottom: 1px solid var(--border-divider);
+}
+.row-head { border-bottom-color: var(--border-default); }
+
+.cell {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: 0 var(--space-16);
+}
+.cell-task { min-width: 0; }
+.task-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Task Cell: max 2 lines, then … */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cell-day-head {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 80px;
+}
+.cell-time { justify-content: center; }
+.cell-total { justify-content: flex-end; }
+
+.is-today { background: var(--bg-today); }
+.row-head .is-today { justify-content: center; }
+
+.cell-muted { color: var(--text-secondary); }
+.cell-subtle { color: var(--text-subtle); }

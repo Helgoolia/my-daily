@@ -1,0 +1,141 @@
+/* My Daily — design tokens, generated from Figma variables (file My Daily Web).
+   Theme: follows the system by default; <html data-theme="light|dark"> overrides it. */
+
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Public Sans Numeric"; src: url("/fonts/PublicSans-Medium-digits.woff2") format("woff2"); font-weight: 500; font-display: swap;
+  unicode-range: U+0020, U+002C-002E, U+0030-003A, U+00A0, U+00B7, U+2013, U+2014, U+202F; /* digits and : , . – — · spaces only */ }
+
+:root {
+  color-scheme: light dark;
+
+  /* Primitives */
+  --gray-white: #FFFFFF;
+  --gray-0: #F2F2F2;
+  --gray-0-5: #E0E0E2;
+  --gray-1: #D0D0D2;
+  --gray-1-5: #BFBFC1;
+  --gray-2: #A5A5AA;
+  --gray-3: #8B8B92;
+  --gray-4: #6A6A71;
+  --gray-5: #52525B;
+  --gray-6: #38383E;
+  --gray-7: #303038;
+  --gray-8: #28282F;
+  --gray-8-5: #1C1C21;
+  --gray-9: #101013;
+  --gray-10: #000000;
+  --yellow-5: #F6D655;
+  --yellow-5-5: #F7C766;
+  --yellow-6: #F2A100;
+  --yellow-7: #B87400;
+  --yellow-8: #8A5C00;
+  --yellow-10: #181301;
+  --red-5: #EB6B6B;
+  --red-6: #B34242;
+  --red-7: #7B2D2D;
+  --red-8: #5A2121;
+
+  /* Semantic colors: light-dark(LIGHT, DARK) */
+  --bg-app: light-dark(var(--gray-white), var(--gray-9));
+  --bg-sidebar: light-dark(var(--gray-0), var(--gray-8-5));
+  --bg-control: light-dark(var(--gray-white), var(--gray-7));
+  --bg-today: light-dark(var(--gray-0), var(--gray-8-5));
+  --bg-elevated: light-dark(var(--gray-white), var(--gray-8));
+  --bg-inset: light-dark(var(--gray-0-5), var(--gray-9));
+  --bg-accent: light-dark(var(--yellow-5), var(--yellow-5));
+  --bg-running: light-dark(var(--yellow-6), var(--yellow-6));
+  --bg-danger: light-dark(var(--red-6), var(--red-6));
+  --bg-disabled: light-dark(var(--gray-0), var(--gray-7));
+  --bg-inverse: light-dark(var(--gray-8), var(--gray-8));
+  --bg-scrim: light-dark(color-mix(in srgb, var(--gray-9) 30%, transparent), color-mix(in srgb, var(--gray-10) 60%, transparent));
+  --text-primary: light-dark(var(--gray-9), var(--gray-0));
+  --text-secondary: light-dark(var(--gray-5), var(--gray-2));
+  --text-subtle: light-dark(var(--gray-4), var(--gray-4));
+  --text-disabled: light-dark(var(--gray-2), var(--gray-5));
+  --text-on-accent: light-dark(var(--yellow-10), var(--yellow-10));
+  --text-on-danger: light-dark(var(--gray-white), var(--gray-white));
+  --text-error: light-dark(var(--red-6), var(--red-5));
+  --text-inverse: light-dark(var(--gray-white), var(--gray-0));
+  --text-inverse-secondary: light-dark(var(--gray-1-5), var(--gray-3));
+  --border-default: light-dark(var(--gray-1), var(--gray-6));
+  --border-strong: light-dark(var(--gray-3), var(--gray-5));
+  --border-divider: light-dark(var(--gray-0-5), var(--gray-7));
+  --border-focus: light-dark(var(--gray-9), var(--yellow-6));
+  --border-error: light-dark(var(--red-5), var(--red-5));
+  --border-inverse: light-dark(var(--gray-7), var(--gray-6));
+  --state-hover: light-dark(color-mix(in srgb, var(--gray-9) 8%, transparent), color-mix(in srgb, var(--gray-0) 8%, transparent));
+  --state-pressed: light-dark(color-mix(in srgb, var(--gray-9) 14%, transparent), color-mix(in srgb, var(--gray-0) 14%, transparent));
+  --state-hover-on-accent: light-dark(color-mix(in srgb, var(--yellow-6) 25%, transparent), color-mix(in srgb, var(--yellow-6) 25%, transparent));
+  --state-pressed-on-accent: light-dark(color-mix(in srgb, var(--yellow-6) 45%, transparent), color-mix(in srgb, var(--yellow-6) 45%, transparent));
+  --brand-mark: light-dark(var(--yellow-6), var(--yellow-6));
+  --brand-mark-dot: light-dark(var(--yellow-5-5), var(--yellow-5-5));
+
+  /* Spacing (Sizing/*) */
+  --space-0: 0px;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-36: 36px;
+  --space-40: 40px;
+  --space-44: 44px;
+  --space-48: 48px;
+  --space-52: 52px;
+  --space-56: 56px;
+  --space-64: 64px;
+  --space-72: 72px;
+  --space-80: 80px;
+  --space-88: 88px;
+  --space-96: 96px;
+  --space-112: 112px;
+
+  /* Radius (Roundness/*) */
+  --radius-0: 0px;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-full: 999px;
+
+  /* Fonts */
+  --font-text: "Fixel Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-numeric: "Public Sans Numeric", var(--font-text);
+
+  /* Elevation */
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 0.32);
+  --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.40);
+
+  --opacity-disabled: 0.35;
+}
+
+[data-theme="light"] { color-scheme: light; --opacity-disabled: 0.5; }
+[data-theme="dark"]  { color-scheme: dark;  --opacity-disabled: 0.35; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) { --opacity-disabled: 0.5; } }
+
+/* Text styles — same names as in Figma */
+.t-heading-l  { font: 700 24px/32px var(--font-text); }
+.t-heading-m  { font: 500 18px/24px var(--font-text); }
+.t-body-m     { font: 400 15px/20px var(--font-text); }
+.t-body-m-medium { font: 500 15px/20px var(--font-text); }
+.t-body-s     { font: 400 13px/20px var(--font-text); }
+.t-body-s-medium { font: 500 13px/20px var(--font-text); }
+.t-caption    { font: 400 12px/16px var(--font-text); }
+.t-overline   { font: 500 12px/16px var(--font-text); letter-spacing: 0.08em; text-transform: uppercase; }
+/* Numbers only: digits and : – · — never words */
+.t-numeric-l  { font: 500 24px/32px var(--font-numeric); font-variant-numeric: tabular-nums; }
+.t-numeric-m  { font: 500 15px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
+.t-numeric-s  { font: 500 13px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
