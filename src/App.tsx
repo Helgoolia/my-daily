@@ -49,7 +49,12 @@ export default function App() {
           now={now}
           onStart={(id) => update((d) => startTimer(d, id))}
           onStop={() => update((d) => stopTimer(d))}
-          onAddTask={(name) => update((d) => addTaskToWeek(d, name).data)}
+          onAddTask={(name) => {
+            // Compute once from current data so the id is known right away (for focus).
+            const result = addTaskToWeek(data, name, now);
+            update(() => result.data);
+            return result.taskId;
+          }}
           onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
         />
       </main>

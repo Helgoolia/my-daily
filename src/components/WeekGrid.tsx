@@ -1,4 +1,5 @@
 import { IconArrowBarRight, IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
+import { useEffect, useRef } from 'react';
 import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
@@ -12,7 +13,8 @@ type Props = {
   now: Date;
   onStart: (taskId: string) => void;
   onStop: () => void;
-  onAddTask: (name: string) => void;
+  /** Returns the id of the created (or re-used) task, so focus can move to its ▶ */
+  onAddTask: (name: string) => string | null;
   onExpandSidebar?: () => void;
 };
 
@@ -22,6 +24,16 @@ type Props = {
  */
 export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar }: Props) {
   const lang = data.settings.language;
+  // After adding a task, focus jumps to its ▶ — the next thing you usually do is start tracking it
+  // (Space/Enter starts). Adding many tasks in a row stays possible: click the field again.
+  const focusTask = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusTask.current) return;
+    const btn = document.querySelector<HTMLButtonElement>(`[data-start="${focusTask.current}"]`);
+    focusTask.current = null;
+    btn?.focus();
+    btn?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
   const days = weekDays(monday);
   const dates = days.map(toISODate);
   const todayISO = toISODate(now);
@@ -117,6 +129,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                       <button
                         type="button"
                         className={`icon-button ${isRunning ? 'is-primary' : ''}`}
+                        data-start={task.id}
                         onClick={() => (isRunning ? onStop() : onStart(task.id))}
                         aria-label={`${isRunning ? t(lang, 'stop') : t(lang, 'start')}: ${task.name}`}
                       >
@@ -155,7 +168,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
         )}
       </div>
 
-      <AddTask lang={lang} onAdd={onAddTask} />
+      <AddTask lang={lang} onAdd={(name) => { focusTask.current = onAddTask(name); }} />
     </section>
   );
 }
