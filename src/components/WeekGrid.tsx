@@ -51,7 +51,10 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask }: Prop
         <div className="week-summary">
           <span className="t-overline week-summary-label">{t(lang, 'weekTotal')}</span>
           <span className="t-numeric-l">{formatMinutes(weekTotal)}</span>
-          {runningInWeek && <span className="t-caption week-summary-label">{t(lang, 'includingActiveTimer')}</span>}
+          {/* Always rendered so the header height doesn't jump when a timer starts or stops */}
+          <span className="t-caption week-summary-label" aria-hidden={!runningInWeek} style={{ visibility: runningInWeek ? 'visible' : 'hidden' }}>
+            {t(lang, 'includingActiveTimer')}
+          </span>
         </div>
       </header>
 

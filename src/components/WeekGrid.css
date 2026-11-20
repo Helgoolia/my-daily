@@ -97,10 +97,13 @@
 .add-task-input {
   flex: 1;
   min-width: 0;
+  height: 20px;
+  padding: 0;
   border: 0;
   outline: 0;
   background: none;
   color: var(--text-primary);
+  line-height: 20px; /* inputs ignore the inherited line-height; without this the text sits high */
 }
 .add-task-input::placeholder { color: var(--text-secondary); }
 .add-task-hint { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--text-subtle); }
