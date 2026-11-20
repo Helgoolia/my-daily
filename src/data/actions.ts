@@ -9,9 +9,10 @@ const newId = () => Math.random().toString(36).slice(2, 10);
 export function stopTimer(data: AppData, now = new Date()): AppData {
   if (!data.timer) return data;
   const started = new Date(data.timer.startedAt);
-  const minutes = Math.round((now.getTime() - started.getTime()) / 60_000);
+  // Exact length, not rounded: many short sessions must add up (stored as fractional minutes).
+  const minutes = Math.max(0, (now.getTime() - started.getTime()) / 60_000);
   const entries: Entry[] =
-    minutes > 0
+    minutes >= 1 / 60
       ? [...data.entries, { id: newId(), taskId: data.timer.taskId, date: toISODate(started), minutes, source: 'timer' }]
       : data.entries;
   return { ...data, entries, timer: null };
@@ -52,3 +53,8 @@ export function addTaskToWeek(data: AppData, rawName: string, now = new Date()):
   const task: Task = { id: newId(), name, hidden: false, createdAt: now.toISOString() };
   return { data: ensureInWeek({ ...data, tasks: [...data.tasks, task] }, task.id, now), taskId: task.id };
 }
+
+export const setHidden = (data: AppData, taskId: string, hidden: boolean): AppData => ({
+  ...data,
+  tasks: data.tasks.map((t) => (t.id === taskId ? { ...t, hidden } : t)),
+});

@@ -1,4 +1,4 @@
-import { IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
+import { IconArrowBarRight, IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
 import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
@@ -13,13 +13,14 @@ type Props = {
   onStart: (taskId: string) => void;
   onStop: () => void;
   onAddTask: (name: string) => void;
+  onExpandSidebar?: () => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar }: Props) {
   const lang = data.settings.language;
   const days = weekDays(monday);
   const dates = days.map(toISODate);
@@ -32,21 +33,28 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask }: Prop
   const runningSeconds = timer ? Math.max(0, Math.floor((now.getTime() - new Date(timer.startedAt).getTime()) / 1000)) : 0;
   const runningDate = timer ? toISODate(new Date(timer.startedAt)) : null;
   const liveMinutes = (taskId: string, date: string) =>
-    timer && timer.taskId === taskId && runningDate === date ? Math.floor(runningSeconds / 60) : 0;
+    timer && timer.taskId === taskId && runningDate === date ? runningSeconds / 60 : 0;
   const runningInWeek = timer !== null && runningDate !== null && dates.includes(runningDate) && taskIds.includes(timer.taskId);
 
   const cellMinutes = (taskId: string, date: string) => minutesFor(data.entries, taskId, date) + liveMinutes(taskId, date);
-  const dayMinutes = (date: string) => dayTotal(data.entries, date, taskIds) + (timer && runningDate === date && taskIds.includes(timer.taskId) ? Math.floor(runningSeconds / 60) : 0);
+  const dayMinutes = (date: string) => dayTotal(data.entries, date, taskIds) + (timer && runningDate === date && taskIds.includes(timer.taskId) ? runningSeconds / 60 : 0);
   const weekTotal = dates.reduce((sum, d) => sum + dayMinutes(d), 0);
 
   return (
     <section className="week" aria-label={`${monthName(lang, monday)} · ${t(lang, 'week')} ${weekOfMonth(monday)}`}>
       <header className="week-header">
-        <div>
+        <div className="week-title">
+          {onExpandSidebar && (
+            <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')} title={t(lang, 'expandSidebar')}>
+              <IconArrowBarRight size={16} />
+            </button>
+          )}
+          <div>
           <h1 className="t-heading-l">
             {monthName(lang, monday)} · {t(lang, 'week')} {weekOfMonth(monday)}
           </h1>
           <p className="t-body-s week-range">{weekRange(lang, monday, addDays(monday, 6))}</p>
+          </div>
         </div>
         <div className="week-summary">
           <span className="t-overline week-summary-label">{t(lang, 'weekTotal')}</span>
@@ -58,7 +66,12 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask }: Prop
         </div>
       </header>
 
-      <div className="grid" role="table">
+      {/* Today's column is 140 px (room for time + play/stop); other days share the rest */}
+      <div
+        className="grid"
+        role="table"
+        style={{ '--cols': `280px ${dates.map((d) => (d === todayISO ? '140px' : 'minmax(64px, 1fr)')).join(' ')} 100px` } as React.CSSProperties}
+      >
         <div className="row row-head" role="row">
           <div className="cell cell-task cell-head-label t-caption" role="columnheader">{t(lang, 'task')}</div>
           {days.map((d, i) => {
@@ -96,7 +109,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask }: Prop
                       {isRunning ? (
                         <span className="t-numeric-m">
                           {formatMinutes(minutes)}
-                          <span className="seconds">:{String(runningSeconds % 60).padStart(2, '0')}</span>
+                          <span className="seconds">:{String(Math.floor(minutes * 60 + 1e-6) % 60).padStart(2, '0')}</span>
                         </span>
                       ) : (
                         <span className={`t-numeric-m ${minutes === 0 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>

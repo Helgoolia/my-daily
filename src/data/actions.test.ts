@@ -13,6 +13,16 @@ describe('timer', () => {
     expect(data.entries).toMatchObject([{ taskId, date: '2026-11-20', minutes: 90, source: 'timer' }]);
   });
 
+  it('keeps short sessions so they add up', () => {
+    let { data, taskId } = addTaskToWeek(emptyData(), 'A', at(9));
+    for (let i = 0; i < 4; i++) {
+      const start = new Date(2026, 10, 20, 9, i, 0);
+      data = stopTimer(startTimer(data, taskId!, start), new Date(start.getTime() + 30_000));
+    }
+    const total = data.entries.reduce((s, e) => s + e.minutes, 0);
+    expect(total).toBeCloseTo(2);
+  });
+
   it('switching stops the previous task first', () => {
     let d = emptyData();
     const a = addTaskToWeek(d, 'A', at(9));

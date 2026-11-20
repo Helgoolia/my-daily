@@ -2,7 +2,8 @@ import type { ISODate } from '../data/types';
 
 /** 90 → "1:30", 0 → "0:00" */
 export function formatMinutes(total: number): string {
-  const m = Math.max(0, Math.round(total));
+  // Floor like a clock (1:29:59 shows 1:29); the epsilon absorbs float sums like 89.9999999.
+  const m = Math.max(0, Math.floor(total + 1e-6));
   return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
 }
 

@@ -26,7 +26,7 @@ type Entry = {
   id: string;
   taskId: string;
   date: string;             // "2026-11-09" — the local day the time belongs to
-  minutes: number;          // whole minutes; 1:30 = 90
+  minutes: number;          // 1:30 = 90; timer sessions keep seconds as a fraction
   source: "timer" | "manual" | "import";
   importId?: string;        // set when source = "import"
 };
@@ -43,6 +43,7 @@ type Settings = {
   theme: "system" | "light" | "dark";
   language: "uk" | "en";
   sort: "most-tracked" | "recent" | "name";
+  sidebarCollapsed?: boolean;
 };
 
 type ImportBatch = { id: string; at: string; entryIds: string[]; createdTaskIds: string[] };
@@ -52,6 +53,7 @@ type ImportBatch = { id: string; at: string; entryIds: string[]; createdTaskIds:
 
 - **Totals are never stored.** Day, week, task and all-time totals are always calculated from `entries` — so they can't drift (85 of 200 hand-written weeks were off by 10+ min).
 - **A cell = the sum of entries** for that task and day. Editing a cell to 1:45 replaces that day's entries with one `manual` entry of 105 min.
+- **Short sessions are never lost.** A 25-second session is stored as 0.4167 min; displays floor like a clock.
 - **The timer is a start time, not a counter.** If the tab sleeps or the laptop closes, the time is still right. Stopping it adds one `timer` entry for today.
 - **Past midnight:** v1 adds the whole session to the start day; Stop at… shows the date (split screen is v2).
 - **Day limit:** a day can't exceed 24:00 per all tasks together.

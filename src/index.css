@@ -18,7 +18,9 @@ body {
   outline-offset: 2px;
 }
 
+.layout { display: flex; min-height: 100%; }
 .app {
-  min-height: 100%;
+  flex: 1;
+  min-width: 0;
   padding: var(--space-16);
 }

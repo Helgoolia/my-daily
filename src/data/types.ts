@@ -14,7 +14,7 @@ export type Entry = {
   id: string;
   taskId: string;
   date: ISODate;
-  minutes: number; // whole minutes, 1:30 = 90
+  minutes: number; // 1:30 = 90; timer sessions keep seconds as a fraction (25 s = 0.4167)
   source: 'timer' | 'manual' | 'import';
   importId?: string;
 };
@@ -31,6 +31,7 @@ export type Settings = {
   theme: 'system' | 'light' | 'dark';
   language: 'uk' | 'en';
   sort: 'most-tracked' | 'recent' | 'name';
+  sidebarCollapsed?: boolean;
 };
 
 export type ImportBatch = {
