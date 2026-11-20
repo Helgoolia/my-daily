@@ -5,7 +5,7 @@ Weekly time tracker, web, React + Vite + TypeScript. Design source: Figma file *
 decisions; match the Figma screens and component descriptions, ask when they disagree.
 
 ## Commands
-- `npm run dev` — local app at http://localhost:5173 (a sample week appears in dev only)
+- `npm run dev` — local app at http://localhost:5173 (a sample week appears in dev, or with `?demo` on any build)
 - `npm test` — unit tests (Vitest) · `npm run build` · `npm run lint`
 
 ## Styling

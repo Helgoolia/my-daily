@@ -7,8 +7,10 @@ import { mondayOf } from './lib/time';
 
 function initialData(): AppData {
   const { data } = load();
-  // Development only: show a sample week until real tracking exists.
-  if (import.meta.env.DEV && data.tasks.length === 0) return demoData();
+  // Sample week (never saved): in development, or on any build with ?demo in the address —
+  // handy for reviewing Vercel previews before real tracking exists.
+  const wantsDemo = import.meta.env.DEV || new URLSearchParams(location.search).has('demo');
+  if (wantsDemo && data.tasks.length === 0) return demoData();
   return data;
 }
 
