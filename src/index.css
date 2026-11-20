@@ -1,0 +1,24 @@
+@import './styles/tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: 400 15px/20px var(--font-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus ring: element radius + 4, colour from tokens (see Figma _Base components) */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.app {
+  min-height: 100%;
+  padding: var(--space-16);
+}
