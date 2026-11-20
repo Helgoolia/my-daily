@@ -121,3 +121,8 @@
 .week-title > .ghost-icon { animation: fade-in 200ms 120ms both; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .week-title > .ghost-icon { animation: none; } }
+
+/* A just-added task row flashes once (1.2 s) so it's easy to spot */
+.row.is-new { animation: row-new 1200ms ease-out; }
+@keyframes row-new { from { background: var(--state-pressed); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .row.is-new { animation: none; } }

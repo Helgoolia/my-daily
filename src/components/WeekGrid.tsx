@@ -25,15 +25,18 @@ type Props = {
  */
 export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar }: Props) {
   const lang = data.settings.language;
-  // After adding a task, focus jumps to its ▶ — the next thing you usually do is start tracking it
-  // (Space/Enter starts). Adding many tasks in a row stays possible: click the field again.
-  const focusTask = useRef<string | null>(null);
+  // After adding a task the field lets go of focus and the new row flashes briefly, so the eye finds it;
+  // its ▶ is one click away. (Moving focus to ▶ left a yellow ring that read as "active".)
+  const flashTask = useRef<string | null>(null);
   useEffect(() => {
-    if (!focusTask.current) return;
-    const btn = document.querySelector<HTMLButtonElement>(`[data-start="${focusTask.current}"]`);
-    focusTask.current = null;
-    btn?.focus();
-    btn?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (!flashTask.current) return;
+    const row = document.querySelector<HTMLElement>(`[data-row="${flashTask.current}"]`);
+    flashTask.current = null;
+    if (!row) return;
+    row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    row.classList.remove('is-new');
+    void row.offsetWidth; // restart the animation if the same task is added again
+    row.classList.add('is-new');
   });
   const days = weekDays(monday);
   const dates = days.map(toISODate);
@@ -58,7 +61,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
       <header className="week-header">
         <div className="week-title">
           {onExpandSidebar && (
-            <Tooltip label={t(lang, 'expandSidebar')} placement="below">
+            <Tooltip label={t(lang, 'expand')} placement="below">
               <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')}>
                 <IconArrowBarRight size={16} />
               </button>
@@ -110,7 +113,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
         {tasks.map((task) => {
           const isRunning = timer?.taskId === task.id;
           return (
-            <div className="row" role="row" key={task.id}>
+            <div className="row" role="row" key={task.id} data-row={task.id}>
               <div className="cell cell-task t-body-m" role="rowheader">
                 <span className="task-name">{task.name}</span>
               </div>
@@ -132,7 +135,6 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                       <button
                         type="button"
                         className={`icon-button ${isRunning ? 'is-primary' : ''}`}
-                        data-start={task.id}
                         onClick={() => (isRunning ? onStop() : onStart(task.id))}
                         aria-label={`${isRunning ? t(lang, 'stop') : t(lang, 'start')}: ${task.name}`}
                       >
@@ -171,7 +173,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
         )}
       </div>
 
-      <AddTask lang={lang} onAdd={(name) => { focusTask.current = onAddTask(name); }} />
+      <AddTask lang={lang} onAdd={(name) => { flashTask.current = onAddTask(name); }} />
     </section>
   );
 }
