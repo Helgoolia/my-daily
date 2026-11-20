@@ -1,9 +1,14 @@
 /* My Daily — design tokens, generated from Figma variables (file My Daily Web).
    Theme: follows the system by default; <html data-theme="light|dark"> overrides it. */
 
-@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
-@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+/* Fixel ships different vertical metrics for Windows (usWinAscent 750 / 250) and Mac/Linux (hhea 900 / 190),
+   so Windows drew text ~1.5 px higher. The overrides pin one set everywhere: capitals sit in the optical middle. */
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap;
+  ascent-override: 90%; descent-override: 19%; line-gap-override: 0%; }
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap;
+  ascent-override: 90%; descent-override: 19%; line-gap-override: 0%; }
+@font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap;
+  ascent-override: 90%; descent-override: 19%; line-gap-override: 0%; }
 @font-face { font-family: "Public Sans Numeric"; src: url("/fonts/PublicSans-Medium-digits.woff2") format("woff2"); font-weight: 500; font-display: swap;
   unicode-range: U+0020, U+002C-002E, U+0030-003A, U+00A0, U+00B7, U+2013, U+2014, U+202F; /* digits and : , . – — · spaces only */ }
 
