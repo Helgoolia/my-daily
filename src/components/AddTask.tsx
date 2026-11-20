@@ -27,6 +27,13 @@ export function AddTask({ lang, onAdd }: { lang: Settings['language']; onAdd: (n
         className="add-task-input t-body-m"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          // Esc: clear and leave the field (Figma Flow 10: Esc closes)
+          if (e.key === 'Escape') {
+            setValue('');
+            e.currentTarget.blur();
+          }
+        }}
         placeholder={t(lang, 'nameATask')}
         aria-label={t(lang, 'nameATask')}
         maxLength={80}
