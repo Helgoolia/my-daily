@@ -31,7 +31,8 @@ export default function App() {
 
   return (
     <div className="layout">
-      {!collapsed && (
+      {/* Kept mounted so collapse/expand can animate; inert removes it from tab order while hidden */}
+      <div className={`sidebar-wrap ${collapsed ? 'is-collapsed' : ''}`} inert={collapsed}>
         <Sidebar
           data={data}
           now={now}
@@ -40,7 +41,7 @@ export default function App() {
           onUnhide={(id) => update((d) => setHidden(d, id, false))}
           onSettings={setSettings}
         />
-      )}
+      </div>
       <main className="app">
         <WeekGrid
           data={data}

@@ -116,3 +116,8 @@
 
 .cell-muted { color: var(--text-secondary); }
 .cell-subtle { color: var(--text-subtle); }
+
+/* Expand button fades in after the sidebar has slid away */
+.week-title > .ghost-icon { animation: fade-in 200ms 120ms both; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .week-title > .ghost-icon { animation: none; } }

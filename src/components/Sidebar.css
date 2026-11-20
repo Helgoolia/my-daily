@@ -1,3 +1,20 @@
+/* Collapse/expand: the wrapper animates its width; the sidebar keeps 280 so nothing inside reflows */
+.sidebar-wrap {
+  flex: none;
+  width: 280px;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  transition: width 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+.sidebar-wrap.is-collapsed { width: 0; }
+.sidebar-wrap .sidebar { transition: opacity 160ms ease, transform 240ms cubic-bezier(0.2, 0, 0, 1); }
+.sidebar-wrap.is-collapsed .sidebar { opacity: 0; transform: translateX(-24px); }
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-wrap, .sidebar-wrap .sidebar { transition: none; }
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -5,8 +22,6 @@
   width: 280px;
   flex: none;
   height: 100vh;
-  position: sticky;
-  top: 0;
   padding: var(--space-24) var(--space-16) var(--space-16);
   background: var(--bg-sidebar);
 }
