@@ -7,8 +7,11 @@ import type { AppData } from '../data/types';
 export function useAppData() {
   const [initial] = useState(() => {
     const { data } = load();
-    const wantsDemo = import.meta.env.DEV || new URLSearchParams(location.search).has('demo');
-    return wantsDemo && data.tasks.length === 0 ? { data: demoData(), isDemo: true } : { data, isDemo: false };
+    // ?demo always shows the sample week (your saved data stays untouched underneath);
+    // in development the sample appears only while nothing is saved yet.
+    const forced = new URLSearchParams(location.search).has('demo');
+    const devEmpty = import.meta.env.DEV && data.tasks.length === 0;
+    return forced || devEmpty ? { data: demoData(), isDemo: true } : { data, isDemo: false };
   });
   const isDemo = initial.isDemo;
   const [data, setData] = useState<AppData>(initial.data);
