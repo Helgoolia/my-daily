@@ -2,7 +2,7 @@ import { cloneElement, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import './Tooltip.css';
 
-type Placement = 'right-of-row' | 'below' | 'above';
+type Placement = 'right-of-row' | 'right' | 'below' | 'above';
 
 /**
  * Tooltip — Figma: Components / Tooltip. Inverse colours, hugs the text (max 360), 8 px from the
@@ -30,6 +30,10 @@ export function Tooltip({
     if (placement === 'right-of-row') {
       const row = el.closest('.task-item')?.getBoundingClientRect() ?? r;
       setPos({ left: row.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
+      return;
+    }
+    if (placement === 'right') {
+      setPos({ left: r.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
       return;
     }
     const below = placement === 'below' || r.top < 48; // flip down when there is no room above

@@ -79,7 +79,8 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
     <aside className="sidebar" aria-label={t(lang, 'allTasks')}>
       <div className="sidebar-header">
         <Logo active={timer !== null} />
-        <Tooltip label={t(lang, 'collapseSidebar')} placement="below">
+        {/* Right of the button: at the sidebar's edge it covers nothing (below would hide "All tasks") */}
+        <Tooltip label={t(lang, 'collapseSidebar')} placement="right">
           <button type="button" className="ghost-icon" onClick={onCollapse} aria-label={t(lang, 'collapseSidebar')}>
             <IconArrowBarLeft size={16} />
           </button>
