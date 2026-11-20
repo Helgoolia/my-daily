@@ -9,6 +9,7 @@ import { t } from '../lib/i18n';
  * Suggestions list comes in a later PR (Flow 10).
  */
 export function AddTask({ lang, onAdd }: { lang: Settings['language']; onAdd: (name: string) => void }) {
+  // After Enter the field lets go of focus; WeekGrid flashes the new row (see onAddTask).
   const [value, setValue] = useState('');
   return (
     <form
@@ -18,6 +19,7 @@ export function AddTask({ lang, onAdd }: { lang: Settings['language']; onAdd: (n
         if (!value.trim()) return;
         onAdd(value);
         setValue('');
+        (document.activeElement as HTMLElement | null)?.blur();
       }}
     >
       <IconPlus size={16} className="add-task-icon" aria-hidden />

@@ -18,7 +18,15 @@ body {
   outline-offset: 2px;
 }
 
+.layout { display: flex; min-height: 100%; }
 .app {
-  min-height: 100%;
+  flex: 1;
+  min-width: 0;
   padding: var(--space-16);
+}
+
+/* Scrollbar — Figma: Components / Scrollbar. Native scrolling, styled: thin, token colours. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }

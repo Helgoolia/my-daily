@@ -27,8 +27,24 @@ export function demoData(now = new Date()): AppData {
     }),
   );
 
+  // Older history: all-time totals, tasks that are not in this week, hidden tasks.
+  const past = (weeksAgo: number) => toISODate(addDays(monday, -7 * weeksAgo));
+  const extra: [string, boolean, number][] = [
+    ['Helgoolia', false, 580],
+    ['Interview SigmaSoftw', false, 180],
+    ['Looking for a job', true, 24720],
+    ['Webflow course', true, 900],
+  ];
+  extra.forEach(([name, hidden, minutes], i) => {
+    const id = `x${i}`;
+    tasks.push({ id, name, hidden, createdAt: created });
+    entries.push({ id: `ex${i}`, taskId: id, date: past(i + 2), minutes, source: 'manual' });
+  });
+  const olderTotals = [2490, 1735, 1985, 935, 650, 380];
+  olderTotals.forEach((minutes, i) => entries.push({ id: `old${i}`, taskId: tasks[i].id, date: past(1), minutes, source: 'manual' }));
+
   data.tasks = tasks;
   data.entries = entries;
-  data.weeks[day(0)] = tasks.map((t) => t.id);
+  data.weeks[day(0)] = tasks.slice(0, 6).map((t) => t.id);
   return data;
 }
