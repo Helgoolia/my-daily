@@ -11,6 +11,8 @@ const strings = {
     weekTotal: 'Week total',
     includingActiveTimer: 'Including active timer',
     nameATask: 'Name a task',
+    start: 'Start',
+    stop: 'Stop',
   },
   uk: {
     week: 'тиждень',
@@ -20,6 +22,8 @@ const strings = {
     weekTotal: 'Усього за тиждень',
     includingActiveTimer: 'Разом з активним таймером',
     nameATask: 'Назвіть задачу',
+    start: 'Почати',
+    stop: 'Зупинити',
   },
 } satisfies Record<Lang, Record<string, string>>;
 
