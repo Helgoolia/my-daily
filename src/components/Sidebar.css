@@ -72,22 +72,18 @@
 .ghost-icon:hover { background: var(--state-hover); }
 .ghost-icon:active { background: var(--state-pressed); }
 
-/* Quick action tooltip: on the edge, 8 px offset, inverse colours, hugs the text */
-.quick-action { position: relative; }
-.quick-action:hover::after,
-.quick-action:focus-visible::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + var(--space-8));
-  right: 0;
+/* Tooltip (Figma: Tooltip) — inverse colours, radius 8, padding 8, hugs the text, max 360 */
+.tooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  z-index: 50;
+  max-width: 360px;
   padding: var(--space-8);
   border-radius: var(--radius-8);
   background: var(--bg-inverse);
   color: var(--text-inverse);
-  font: 400 13px/20px var(--font-text);
   white-space: nowrap;
   pointer-events: none;
-  z-index: 10;
 }
 
 .hidden-toggle { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--border-divider); }

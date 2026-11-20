@@ -7,6 +7,7 @@ import {
   IconSun,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { AppData, Settings, Task } from '../data/types';
 import { t } from '../lib/i18n';
 import { formatMinutes, mondayOf, toISODate } from '../lib/time';
@@ -123,11 +124,40 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   );
 }
 
+/**
+ * Quick action with a tooltip to the right of the task row (8 px), centred on the button — Figma:
+ * Sidebar Task Item / Action hovered. Rendered in a portal with position: fixed so the sidebar's
+ * overflow (needed for the collapse animation) can't clip it.
+ */
 function QuickAction({ label, onClick, icon }: { label: string; onClick: () => void; icon: React.ReactNode }) {
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const show = (el: HTMLElement) => {
+    const btn = el.getBoundingClientRect();
+    const row = el.closest('.task-item')?.getBoundingClientRect() ?? btn;
+    setPos({ left: row.right + 8, top: btn.top + btn.height / 2 });
+  };
   return (
-    <button type="button" className="ghost-icon is-small quick-action" onClick={onClick} aria-label={label} data-tooltip={label}>
-      {icon}
-    </button>
+    <>
+      <button
+        type="button"
+        className="ghost-icon is-small"
+        onClick={onClick}
+        aria-label={label}
+        onMouseEnter={(e) => show(e.currentTarget)}
+        onFocus={(e) => show(e.currentTarget)}
+        onMouseLeave={() => setPos(null)}
+        onBlur={() => setPos(null)}
+      >
+        {icon}
+      </button>
+      {pos &&
+        createPortal(
+          <div className="tooltip t-body-s" role="tooltip" style={{ left: pos.left, top: pos.top }}>
+            {label}
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
