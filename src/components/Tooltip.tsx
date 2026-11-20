@@ -1,4 +1,4 @@
-import { cloneElement, useState, type ReactElement } from 'react';
+import { cloneElement, useRef, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import './Tooltip.css';
 
@@ -9,6 +9,7 @@ type Placement = 'right-of-row' | 'right' | 'below' | 'above';
  * trigger, never leaves the window (8 px from edges). Rendered in a portal with position: fixed so
  * no overflow can clip it. Replaces the browser's native title tooltip everywhere.
  *
+ * Appears after ~500 ms of hover (Figma rule) or at once on keyboard focus.
  * `onlyIfTruncated`: show only when the trigger's text is cut with "…" (full task name).
  */
 export function Tooltip({
@@ -27,6 +28,10 @@ export function Tooltip({
   const show = (el: HTMLElement) => {
     if (onlyIfTruncated && el.scrollWidth <= el.clientWidth) return;
     const r = el.getBoundingClientRect();
+    if (placement === 'right') {
+      setPos({ left: r.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
+      return;
+    }
     if (placement === 'right-of-row') {
       const row = el.closest('.task-item')?.getBoundingClientRect() ?? r;
       setPos({ left: row.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
@@ -42,14 +47,23 @@ export function Tooltip({
       ? { left, top: r.bottom + 8, transform: 'translateX(-50%)' }
       : { left, top: r.top - 8, transform: 'translate(-50%, -100%)' });
   };
-  const hide = () => setPos(null);
+  const timer = useRef<number | undefined>(undefined);
+  const showLater = (el: HTMLElement) => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => show(el), 500);
+  };
+  const hide = () => {
+    window.clearTimeout(timer.current);
+    setPos(null);
+  };
 
   const props = children.props as Record<string, ((e: React.SyntheticEvent<HTMLElement>) => void) | undefined>;
   const trigger = cloneElement(children, {
-    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => { props.onMouseEnter?.(e); show(e.currentTarget); },
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => { props.onMouseEnter?.(e); showLater(e.currentTarget); },
     onMouseLeave: (e: React.MouseEvent<HTMLElement>) => { props.onMouseLeave?.(e); hide(); },
-    onFocus: (e: React.FocusEvent<HTMLElement>) => { props.onFocus?.(e); show(e.currentTarget); },
+    onFocus: (e: React.FocusEvent<HTMLElement>) => { props.onFocus?.(e); if (e.currentTarget.matches(':focus-visible')) show(e.currentTarget); },
     onBlur: (e: React.FocusEvent<HTMLElement>) => { props.onBlur?.(e); hide(); },
+    onClick: (e: React.MouseEvent<HTMLElement>) => { props.onClick?.(e); hide(); },
   });
 
   return (
