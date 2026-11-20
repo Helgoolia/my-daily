@@ -27,9 +27,8 @@
 }
 
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); height: 32px; }
-.logo .logo-ring { fill: var(--text-secondary); }
+.logo .logo-ring { fill: var(--brand-mark); }
 .logo .logo-dot { fill: var(--brand-mark-dot); }
-.logo.is-active .logo-ring { fill: var(--brand-mark); }
 .logo .logo-word { fill: var(--text-primary); }
 
 .sidebar-tasks { display: flex; flex-direction: column; gap: var(--space-12); flex: 1; min-height: 0; }
@@ -102,26 +101,28 @@
 
 /* Sort: Button Secondary S + menu (offset 4 px from a button) */
 .sort { position: relative; align-self: flex-start; }
+/* Button Secondary S (Figma): bg/control + 1 px border/default; hover & pressed = state layer + border/strong */
 .secondary-button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-4);
   height: 28px;
   padding: 0 var(--space-8);
-  border: 0;
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-8);
   background: var(--bg-control);
   color: var(--text-primary);
   cursor: pointer;
 }
-.secondary-button:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
-.secondary-button.is-pressed { background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
+.secondary-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.secondary-button:active,
+.secondary-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
 .menu {
   position: absolute;
   top: calc(100% + var(--space-4));
   left: 0;
   z-index: 20;
-  min-width: 200px;
+  width: 220px;
   margin: 0;
   padding: var(--space-4);
   list-style: none;
@@ -130,9 +131,14 @@
   background: var(--bg-elevated);
   box-shadow: var(--shadow-popover);
 }
+/* Menu Item (Figma): Body/M-Medium, 36 high, padding 8, radius 8; selected = trailing check */
 .menu-item {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
   width: 100%;
+  min-height: 36px;
   padding: var(--space-8);
   border: 0;
   border-radius: var(--radius-8);
@@ -142,7 +148,7 @@
   cursor: pointer;
 }
 .menu-item:hover { background: var(--state-hover); }
-.menu-item[aria-checked='true'] { font-weight: 500; }
+.menu-item-check { flex: none; }
 
 /* Preferences: theme + language segmented controls */
 .preferences { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-16); border-top: 1px solid var(--border-divider); }

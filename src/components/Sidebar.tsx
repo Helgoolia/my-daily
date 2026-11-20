@@ -1,6 +1,7 @@
 import {
   IconArrowBarLeft,
   IconCalendarPlus,
+  IconCheck,
   IconChevronDown,
   IconEye,
   IconMoon,
@@ -78,7 +79,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   return (
     <aside className="sidebar" aria-label={t(lang, 'allTasks')}>
       <div className="sidebar-header">
-        <Logo active={timer !== null} />
+        <Logo />
         {/* Right of the button: at the sidebar's edge it covers nothing (below would hide "All tasks") */}
         {/* Tooltip: just the verb; screen readers still get the full "Collapse sidebar" */}
         <Tooltip label={t(lang, 'collapse')} placement="right">
@@ -189,8 +190,9 @@ function SortMenu({ value, lang, onChange }: { value: Settings['sort']; lang: Se
         <ul className="menu" role="menu">
           {SORTS.map((s) => (
             <li key={s} role="none">
-              <button type="button" role="menuitemradio" aria-checked={s === value} className="menu-item t-body-s" onClick={() => { onChange(s); setOpen(false); }}>
+              <button type="button" role="menuitemradio" aria-checked={s === value} className="menu-item t-body-m-medium" onClick={() => { onChange(s); setOpen(false); }}>
                 {label(s)}
+                {s === value && <IconCheck size={16} className="menu-item-check" aria-hidden />}
               </button>
             </li>
           ))}

@@ -2,6 +2,9 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Form controls don't inherit the page font by default — without this, menus and buttons fall back to the system font */
+button, input, select, textarea { font: inherit; color: inherit; }
+
 html, body, #root { height: 100%; }
 
 body {

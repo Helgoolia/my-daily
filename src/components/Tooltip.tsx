@@ -2,7 +2,7 @@ import { cloneElement, useRef, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import './Tooltip.css';
 
-type Placement = 'right-of-row' | 'right' | 'below' | 'above';
+type Placement = 'right-of-row' | 'right' | 'below' | 'below-start' | 'above';
 
 /**
  * Tooltip — Figma: Components / Tooltip. Inverse colours, hugs the text (max 360), 8 px from the
@@ -30,6 +30,11 @@ export function Tooltip({
     const r = el.getBoundingClientRect();
     if (placement === 'right') {
       setPos({ left: r.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
+      return;
+    }
+    if (placement === 'below-start') {
+      // Left edges aligned with the trigger, whatever the label length (e.g. at the window edge)
+      setPos({ left: Math.max(8, r.left), top: r.bottom + 8, transform: 'none' });
       return;
     }
     if (placement === 'right-of-row') {

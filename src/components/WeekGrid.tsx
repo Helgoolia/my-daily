@@ -61,7 +61,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
       <header className="week-header">
         <div className="week-title">
           {onExpandSidebar && (
-            <Tooltip label={t(lang, 'expand')} placement="below">
+            <Tooltip label={t(lang, 'expand')} placement="below-start">
               <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')}>
                 <IconArrowBarRight size={16} />
               </button>
@@ -130,7 +130,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                           <span className="seconds">:{String(Math.floor(minutes * 60 + 1e-6) % 60).padStart(2, '0')}</span>
                         </span>
                       ) : (
-                        <span className={`t-numeric-m ${minutes === 0 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>
+                        <span className={`t-numeric-m ${minutes < 1 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>
                       )}
                       <button
                         type="button"
