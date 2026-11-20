@@ -5,6 +5,7 @@ import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
 import { dayTotal, minutesFor, taskTotalInRange } from '../lib/totals';
 import { AddTask } from './AddTask';
+import { Tooltip } from './Tooltip';
 import './WeekGrid.css';
 
 type Props = {
@@ -57,9 +58,11 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
       <header className="week-header">
         <div className="week-title">
           {onExpandSidebar && (
-            <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')} title={t(lang, 'expandSidebar')}>
-              <IconArrowBarRight size={16} />
-            </button>
+            <Tooltip label={t(lang, 'expandSidebar')} placement="below">
+              <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')}>
+                <IconArrowBarRight size={16} />
+              </button>
+            </Tooltip>
           )}
           <div>
           <h1 className="t-heading-l">

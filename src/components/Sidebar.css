@@ -72,20 +72,6 @@
 .ghost-icon:hover { background: var(--state-hover); }
 .ghost-icon:active { background: var(--state-pressed); }
 
-/* Tooltip (Figma: Tooltip) — inverse colours, radius 8, padding 8, hugs the text, max 360 */
-.tooltip {
-  position: fixed;
-  transform: translateY(-50%);
-  z-index: 50;
-  max-width: 360px;
-  padding: var(--space-8);
-  border-radius: var(--radius-8);
-  background: var(--bg-inverse);
-  color: var(--text-inverse);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
 .hidden-toggle { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--border-divider); }
 .text-button {
   display: inline-flex;

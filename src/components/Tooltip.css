@@ -1,0 +1,11 @@
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  max-width: 360px;
+  padding: var(--space-8);
+  border-radius: var(--radius-8);
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  pointer-events: none;
+  white-space: nowrap;
+}
