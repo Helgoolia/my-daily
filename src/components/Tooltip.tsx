@@ -32,6 +32,11 @@ export function Tooltip({
       setPos({ left: r.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });
       return;
     }
+    if (placement === 'below-start') {
+      // Left edges aligned with the trigger, whatever the label length (e.g. at the window edge)
+      setPos({ left: Math.max(8, r.left), top: r.bottom + 8, transform: 'none' });
+      return;
+    }
     if (placement === 'right-of-row') {
       const row = el.closest('.task-item')?.getBoundingClientRect() ?? r;
       setPos({ left: row.right + 8, top: r.top + r.height / 2, transform: 'translateY(-50%)' });

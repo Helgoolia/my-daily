@@ -61,7 +61,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
       <header className="week-header">
         <div className="week-title">
           {onExpandSidebar && (
-            <Tooltip label={t(lang, 'expand')} placement="below">
+            <Tooltip label={t(lang, 'expand')} placement="below-start">
               <button type="button" className="ghost-icon" onClick={onExpandSidebar} aria-label={t(lang, 'expandSidebar')}>
                 <IconArrowBarRight size={16} />
               </button>
