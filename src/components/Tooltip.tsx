@@ -2,7 +2,7 @@ import { cloneElement, useRef, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import './Tooltip.css';
 
-type Placement = 'right-of-row' | 'right' | 'below' | 'above';
+type Placement = 'right-of-row' | 'right' | 'below' | 'below-start' | 'above';
 
 /**
  * Tooltip — Figma: Components / Tooltip. Inverse colours, hugs the text (max 360), 8 px from the
