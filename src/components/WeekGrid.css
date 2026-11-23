@@ -55,7 +55,8 @@
   line-height: 20px;
 }
 .rename-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
-.rename-input.has-error { border-color: var(--border-error); outline-color: var(--border-error); }
+/* Error (Figma Input · Error): only the red 1 px border, no focus ring */
+.rename-input.has-error, .rename-input.has-error:focus { border-color: var(--border-error); outline: none; }
 .task-name {
   display: -webkit-box;
   -webkit-line-clamp: 2; /* Task Cell: max 2 lines, then … */
