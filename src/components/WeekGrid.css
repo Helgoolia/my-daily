@@ -197,7 +197,6 @@
   text-align: center;
   line-height: 20px;
 }
-.cell-today .time-input { text-align: left; }
 .time-input::placeholder { color: var(--text-secondary); }
 .time-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
 .time-input.has-error, .time-input.has-error:focus { border-color: var(--border-error); outline: none; }

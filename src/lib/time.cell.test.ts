@@ -25,5 +25,6 @@ describe('parseCellTime (Input Type=Time)', () => {
     expect(autoColon('230')).toBe('2:30');
     expect(autoColon('1234')).toBe('12:34');
     expect(autoColon('2:3')).toBe('2:3');
+    expect(autoColon('2:357')).toBe('23:57'); // typing on after the colon appeared
   });
 });

@@ -65,7 +65,10 @@ export function parseCellTime(input: string): number | null {
 
 /** While typing: "230" → "2:30", "1234" → "12:34" (digits only; a typed colon is left alone). */
 export function autoColon(v: string): string {
-  return /^\d{3,4}$/.test(v) ? `${v.slice(0, -2)}:${v.slice(-2)}` : v;
+  // Keep typing after the colon appeared: "2:357" → "23:57"
+  const shifted = v.match(/^(\d{1,2}):(\d{3})$/);
+  const digits = shifted ? shifted[1] + shifted[2] : v;
+  return /^\d{3,4}$/.test(digits) ? `${digits.slice(0, -2)}:${digits.slice(-2)}` : v;
 }
 
 /** Local calendar day as "YYYY-MM-DD" (not UTC — a late-evening session belongs to today). */
