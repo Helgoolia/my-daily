@@ -60,6 +60,7 @@ export default function App() {
 
   const showToast = (message: string, onUndo?: () => void) =>
     setToast({ id: ++toastId.current, message, undoLabel: onUndo ? t(lang, 'undo') : undefined, onUndo });
+  const showSticky = (message: string) => setToast({ id: ++toastId.current, message, sticky: true, closeLabel: t(lang, 'close') });
 
   /** Applies a change and offers Undo: restores the data from before it, keeping settings changed since. */
   const withUndo = (taskId: string, next: (d: AppData) => AppData, message: string) => {
@@ -113,7 +114,7 @@ export default function App() {
     const room = 24 * 60 - typed;
     if ((now.getTime() - started.getTime()) / 60_000 < room) return;
     update((d) => stopTimer(d, new Date(started.getTime() + Math.max(0, room) * 60_000)));
-    showToast(t(lang, 'toastDayFull'));
+    showSticky(t(lang, 'toastDayFull'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
   const collapsed = data.settings.sidebarCollapsed === true;

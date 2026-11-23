@@ -156,7 +156,6 @@ function TimeInput({ initial, limit, lang, label, onError, onDone }: {
       maxLength={8}
       aria-label={label}
       aria-invalid={error}
-      placeholder="0:00"
       onChange={(e) => {
         setValue(autoColon(e.target.value));
         if (error) { setError(false); onError(null); }
