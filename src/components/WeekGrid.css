@@ -35,7 +35,28 @@
   min-height: 72px;
   padding: 0 var(--space-16);
 }
-.cell-task { min-width: 0; }
+.cell-task { min-width: 0; gap: var(--space-8); padding-right: var(--space-8); }
+.cell-task .task-name { flex: 1; min-width: 0; }
+/* ••• : space always reserved (visibility, not display) so the name never reflows */
+.row .row-more { visibility: hidden; flex: none; }
+.row:hover .row-more, .row:focus-within .row-more, .cell-task.is-menu-open .row-more { visibility: visible; }
+
+/* Rename (Input Text S): 32 high, bg/control, radius 10, focus ring; error = red border */
+.rename-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  margin-left: calc(-1 * var(--space-8));
+  padding: 0 var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-10);
+  background: var(--bg-control);
+  color: var(--text-primary);
+  line-height: 20px;
+}
+.rename-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+/* Error (Figma Input · Error): only the red 1 px border, no focus ring */
+.rename-input.has-error, .rename-input.has-error:focus { border-color: var(--border-error); outline: none; }
 .task-name {
   display: -webkit-box;
   -webkit-line-clamp: 2; /* Task Cell: max 2 lines, then … */

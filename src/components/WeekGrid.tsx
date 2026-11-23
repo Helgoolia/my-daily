@@ -1,10 +1,12 @@
-import { IconArrowBarRight, IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
-import { useEffect, useRef } from 'react';
+import { IconArrowBarRight, IconCalendarMinus, IconPencil, IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
 import { dayTotal, minutesFor, taskTotalInRange } from '../lib/totals';
 import { AddTask } from './AddTask';
+import { MoreMenu } from './MoreMenu';
+import { RenameInput } from './RenameInput';
 import { Tooltip } from './Tooltip';
 import './WeekGrid.css';
 
@@ -17,13 +19,19 @@ type Props = {
   /** Returns the id of the created (or re-used) task, so focus can move to its ▶ */
   onAddTask: (name: string) => string | null;
   onExpandSidebar?: () => void;
+  /** Returns an error message (name taken) or null when renamed */
+  onRename: (taskId: string, name: string) => string | null;
+  nameError: (taskId: string, name: string) => string | null;
+  onRemoveFromWeek: (taskId: string) => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek }: Props) {
+  const [editing, setEditing] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
   const lang = data.settings.language;
   // After adding a task the field lets go of focus and the new row flashes briefly, so the eye finds it;
   // its ▶ is one click away. (Moving focus to ▶ left a yellow ring that read as "active".)
@@ -37,6 +45,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
     row.classList.remove('is-new');
     void row.offsetWidth; // restart the animation if the same task is added again
     row.classList.add('is-new');
+    row.addEventListener('animationend', () => row.classList.remove('is-new'), { once: true });
   });
   const days = weekDays(monday);
   const dates = days.map(toISODate);
@@ -114,8 +123,35 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
           const isRunning = timer?.taskId === task.id;
           return (
             <div className="row" role="row" key={task.id} data-row={task.id}>
-              <div className="cell cell-task t-body-m" role="rowheader">
-                <span className="task-name">{task.name}</span>
+              {/* Task Cell: name (double-click renames) + ••• on hover/focus; its space is always reserved */}
+              <div className={`cell cell-task t-body-m ${menuFor === task.id ? 'is-menu-open' : ''}`} role="rowheader">
+                {editing === task.id ? (
+                  <RenameInput
+                    initial={task.name}
+                    label={t(lang, 'taskName')}
+                    onSave={(name) => {
+                      const err = onRename(task.id, name);
+                      if (!err) setEditing(null);
+                      return err;
+                    }}
+                    onCancel={() => setEditing(null)}
+            validate={(name) => nameError(task.id, name)}
+                  />
+                ) : (
+                  <span className="task-name t-body-m-medium" onDoubleClick={() => setEditing(task.id)}>
+                    {task.name}
+                  </span>
+                )}
+                <span className="row-more">
+                  <MoreMenu
+                    label={`${t(lang, 'moreActions')}: ${task.name}`}
+                    onOpenChange={(o) => setMenuFor(o ? task.id : null)}
+                    entries={[
+                      { kind: 'item', label: t(lang, 'rename'), icon: <IconPencil size={16} />, onSelect: () => setEditing(task.id) },
+                      { kind: 'item', label: t(lang, 'removeFromWeek'), icon: <IconCalendarMinus size={16} />, onSelect: () => onRemoveFromWeek(task.id) },
+                    ]}
+                  />
+                </span>
               </div>
               {dates.map((date) => {
                 const minutes = cellMinutes(task.id, date);

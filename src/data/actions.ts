@@ -58,3 +58,64 @@ export const setHidden = (data: AppData, taskId: string, hidden: boolean): AppDa
   ...data,
   tasks: data.tasks.map((t) => (t.id === taskId ? { ...t, hidden } : t)),
 });
+
+const weekDates = (monday: Date) => Array.from({ length: 7 }, (_, i) => toISODate(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)));
+
+/** Minutes a task has in the week of `day` (stored entries only). */
+export function weekMinutes(data: AppData, taskId: string, day = new Date()): number {
+  const dates = new Set(weekDates(mondayOf(day)));
+  return data.entries.reduce((s, e) => (e.taskId === taskId && dates.has(e.date) ? s + e.minutes : s), 0);
+}
+
+/**
+ * Remove from this week: deletes this week's time for the task and drops its row.
+ * The task and its time in other weeks stay. A timer running on it stops without saving.
+ */
+export function removeFromWeek(data: AppData, taskId: string, day = new Date()): AppData {
+  const monday = mondayOf(day);
+  const key = toISODate(monday);
+  const dates = new Set(weekDates(monday));
+  return {
+    ...data,
+    entries: data.entries.filter((e) => !(e.taskId === taskId && dates.has(e.date))),
+    weeks: { ...data.weeks, [key]: (data.weeks[key] ?? []).filter((id) => id !== taskId) },
+    timer: data.timer?.taskId === taskId ? null : data.timer,
+  };
+}
+
+/** Delete: the task, all its time and its rows in every week. A timer running on it stops. */
+export function deleteTask(data: AppData, taskId: string): AppData {
+  const weeks: AppData['weeks'] = {};
+  for (const [k, ids] of Object.entries(data.weeks)) weeks[k] = ids.filter((id) => id !== taskId);
+  return {
+    ...data,
+    tasks: data.tasks.filter((t) => t.id !== taskId),
+    entries: data.entries.filter((e) => e.taskId !== taskId),
+    weeks,
+    timer: data.timer?.taskId === taskId ? null : data.timer,
+  };
+}
+
+/**
+ * Hide: the task leaves the sidebar list and won't carry into new weeks. No time is deleted;
+ * if it has no time this week, its row leaves this week too.
+ */
+export function hideTask(data: AppData, taskId: string, day = new Date()): AppData {
+  let next = setHidden(data, taskId, true);
+  if (weekMinutes(next, taskId, day) === 0 && next.timer?.taskId !== taskId) {
+    const key = toISODate(mondayOf(day));
+    next = { ...next, weeks: { ...next.weeks, [key]: (next.weeks[key] ?? []).filter((id) => id !== taskId) } };
+  }
+  return next;
+}
+
+export type RenameResult = { ok: true; data: AppData } | { ok: false; reason: 'empty' | 'exists'; existingName?: string };
+
+/** Rename everywhere (entries point to the id). Names stay unique, case-insensitive. */
+export function renameTask(data: AppData, taskId: string, rawName: string): RenameResult {
+  const name = rawName.trim().replace(/\s+/g, ' ');
+  if (!name) return { ok: false, reason: 'empty' };
+  const clash = data.tasks.find((t) => t.id !== taskId && t.name.toLowerCase() === name.toLowerCase());
+  if (clash) return { ok: false, reason: 'exists', existingName: clash.name };
+  return { ok: true, data: { ...data, tasks: data.tasks.map((t) => (t.id === taskId ? { ...t, name } : t)) } };
+}

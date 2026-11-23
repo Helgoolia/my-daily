@@ -1,12 +1,101 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ConfirmDialog } from './components/Dialog';
 import { Sidebar } from './components/Sidebar';
+import { Toast, type ToastData } from './components/Toast';
 import { WeekGrid } from './components/WeekGrid';
-import { addTaskToWeek, ensureInWeek, setHidden, startTimer, stopTimer } from './data/actions';
+import {
+  addTaskToWeek,
+  deleteTask,
+  ensureInWeek,
+  hideTask,
+  removeFromWeek,
+  renameTask,
+  setHidden,
+  startTimer,
+  stopTimer,
+  weekMinutes,
+} from './data/actions';
+import type { AppData } from './data/types';
+import { t, tf } from './lib/i18n';
+import { allTimeTotal } from './lib/totals';
 import { formatMinutes, mondayOf } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
+type Confirm = { kind: 'remove' | 'delete'; taskId: string };
+
+/** Puts the task name in bold inside a dialog sentence ("{name} and all 22:30 …") */
+function withName(text: string, name: string): ReactNode {
+  const [before, after] = text.split('{name}');
+  if (after === undefined) return text;
+  // "Name:" — the colon belongs to the name, so it gets the same style
+  const colon = after.startsWith(':') ? ':' : '';
+  return (<>{before}<strong>{name}{colon}</strong>{after.slice(colon.length)}</>);
+}
+
+/** Briefly highlights a row (grid or sidebar) so the eye finds what came back or was added */
+function flash(selector: string) {
+  requestAnimationFrame(() => {
+    document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+      el.classList.remove('is-new');
+      void el.offsetWidth; // restart the animation
+      el.classList.add('is-new');
+      // Drop the class when done, or the flash replays whenever the row moves (e.g. on re-sort)
+      el.addEventListener('animationend', () => el.classList.remove('is-new'), { once: true });
+    });
+  });
+}
+
 export default function App() {
   const { data, update } = useAppData();
+  const [toast, setToast] = useState<ToastData | null>(null);
+  const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const toastId = useRef(0);
+  const lang = data.settings.language;
+  const nameOf = (id: string) => data.tasks.find((x) => x.id === id)?.name ?? '';
+
+  const showToast = (message: string, onUndo?: () => void) =>
+    setToast({ id: ++toastId.current, message, undoLabel: onUndo ? t(lang, 'undo') : undefined, onUndo });
+
+  /** Applies a change and offers Undo: restores the data from before it, keeping settings changed since. */
+  const withUndo = (taskId: string, next: (d: AppData) => AppData, message: string) => {
+    const before = data;
+    update(next);
+    showToast(message, () => {
+      update((d) => ({ ...before, settings: d.settings }));
+      flash(`[data-row="${taskId}"], [data-task="${taskId}"]`);
+    });
+  };
+
+  const removeNow = (id: string) =>
+    withUndo(id, (d) => removeFromWeek(d, id, now), tf(lang, 'toastRemoved', { name: nameOf(id) }));
+  const deleteNow = (id: string) =>
+    withUndo(id, (d) => deleteTask(d, id), tf(lang, 'toastDeleted', { name: nameOf(id) }));
+
+  const onRemoveFromWeek = (id: string) => {
+    // Nothing to lose → no question, just Undo
+    if (weekMinutes(data, id, now) <= 0 && data.timer?.taskId !== id) return removeNow(id);
+    setConfirm({ kind: 'remove', taskId: id });
+  };
+
+  const onDelete = (id: string) => {
+    if (allTimeTotal(data.entries, id) <= 0 && data.timer?.taskId !== id) return deleteNow(id);
+    setConfirm({ kind: 'delete', taskId: id });
+  };
+
+  /** Name taken by another task (case-insensitive) → error text, else null. Checked while typing. */
+  const nameError = (id: string, name: string): string | null => {
+    const clash = data.tasks.find((x) => x.id !== id && x.name.trim().toLowerCase() === name.trim().toLowerCase());
+    return clash ? tf(lang, 'nameExists', { name: clash.name }) : null;
+  };
+
+  const onRename = (id: string, name: string): string | null => {
+    const result = renameTask(data, id, name);
+    if (result.ok) {
+      update(() => result.data);
+      return null;
+    }
+    return result.reason === 'exists' ? tf(lang, 'nameExists', { name: result.existingName ?? name.trim() }) : null;
+  };
   const now = useNow(data.timer ? 1000 : 60_000);
   const collapsed = data.settings.sidebarCollapsed === true;
   const setSettings = (patch: Partial<typeof data.settings>) => update((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
@@ -37,8 +126,19 @@ export default function App() {
           data={data}
           now={now}
           onCollapse={() => setSettings({ sidebarCollapsed: true })}
-          onAddToWeek={(id) => update((d) => ensureInWeek(d, id, now))}
-          onUnhide={(id) => update((d) => setHidden(d, id, false))}
+          onAddToWeek={(id) => {
+            update((d) => ensureInWeek(d, id, now));
+            showToast(tf(lang, 'toastAdded', { name: nameOf(id) }));
+            flash(`[data-row="${id}"]`);
+          }}
+          onUnhide={(id) => {
+            withUndo(id, (d) => setHidden(d, id, false), tf(lang, 'toastRestored', { name: nameOf(id) }));
+            flash(`[data-task="${id}"]`);
+          }}
+          onHide={(id) => withUndo(id, (d) => hideTask(d, id, now), tf(lang, 'toastHidden', { name: nameOf(id) }))}
+          onDelete={onDelete}
+          onRename={onRename}
+          nameError={nameError}
           onSettings={setSettings}
         />
       </div>
@@ -56,8 +156,34 @@ export default function App() {
             return result.taskId;
           }}
           onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
+          onRename={onRename}
+          nameError={nameError}
+          onRemoveFromWeek={onRemoveFromWeek}
         />
       </main>
+      {confirm && (() => {
+        // Built on every render so the time stays live while the timer runs, and matches the grid
+        const { kind, taskId } = confirm;
+        const running = data.timer?.taskId === taskId;
+        const base = kind === 'remove' ? weekMinutes(data, taskId, now) : allTimeTotal(data.entries, taskId);
+        const time = formatMinutes(base + (running ? runningMinutes : 0));
+        const key = kind === 'remove' ? (running ? 'removeBodyRunning' : 'removeBody') : (running ? 'deleteBodyRunning' : 'deleteBody');
+        return (
+        <ConfirmDialog
+          title={t(lang, kind === 'remove' ? 'removeTitle' : 'deleteTitle')}
+          body={withName(tf(lang, key, { time }), nameOf(taskId))}
+          confirmLabel={t(lang, kind === 'remove' ? 'remove' : 'delete')}
+          cancelLabel={t(lang, 'cancel')}
+          onConfirm={() => {
+            setConfirm(null);
+            if (kind === 'remove') removeNow(taskId);
+            else deleteNow(taskId);
+          }}
+          onCancel={() => setConfirm(null)}
+        />
+        );
+      })()}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

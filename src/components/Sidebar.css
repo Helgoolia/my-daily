@@ -39,8 +39,11 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  margin-right: calc(-1 * var(--space-8)); /* the thin scrollbar sits in the sidebar padding, not over the totals */
-  padding-right: var(--space-8);
+  /* Rows keep the full sidebar width (totals line up with the All-time label and the collapse icon, as in
+     Figma); the scrollbar lives in the sidebar's right padding. --gutter = the OS scrollbar width, set in JS
+     (0 for overlay scrollbars on macOS). */
+  margin-right: calc(-1 * var(--space-16));
+  padding-right: calc(var(--space-16) - var(--gutter, 0px));
   scrollbar-gutter: stable;
 }
 .section-header { display: flex; align-items: baseline; gap: var(--space-8); margin: 0; font: inherit; }
@@ -57,7 +60,17 @@
   padding: var(--space-8);
   border-radius: var(--radius-8);
 }
-.task-item:hover { background: var(--state-hover); }
+.task-item:hover, .task-item:focus-within, .task-item.is-active { background: var(--state-hover); }
+/* ••• appears on hover / focus / while its menu is open; space reserved so names don't jump */
+.task-item .row-more { display: none; }
+.task-item:hover .row-more, .task-item:focus-within .row-more, .task-item.is-active .row-more { display: inline-flex; }
+/* Editing: the state moves to the input, so the row loses its hover fill (Figma) */
+.task-item.is-editing, .task-item.is-editing:hover { background: transparent; }
+.task-item .rename-input.is-small { height: 28px; margin-left: calc(-1 * var(--space-4)); border-radius: var(--radius-8); }
+/* Flash after Restore / Undo: state/hover fades in 300 ms, holds ~1 s, fades out 300 ms */
+.task-item.is-new { animation: item-flash 1600ms ease; }
+@keyframes item-flash { 0% { background: transparent; } 19%, 81% { background: var(--state-hover); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .task-item.is-new { animation: none; } }
 .task-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .task-item.is-hidden .task-item-name { color: var(--text-secondary); }
 .task-item-side { display: flex; align-items: center; gap: var(--space-4); flex: none; }
