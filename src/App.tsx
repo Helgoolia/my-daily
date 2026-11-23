@@ -18,24 +18,28 @@ import {
 import type { AppData } from './data/types';
 import { t, tf } from './lib/i18n';
 import { allTimeTotal } from './lib/totals';
-import { formatMinutes, mondayOf } from './lib/time';
+import { formatMinutes, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
 type Confirm = { kind: 'remove' | 'delete'; taskId: string };
 
-/** Puts the task name in bold inside a dialog sentence ("{name} and all 22:30 …") */
-function withName(text: string, name: string): ReactNode {
-  const [before, after] = text.split('{name}');
-  if (after === undefined) return text;
-  // "Name:" — the colon belongs to the name, so it gets the same style
-  const colon = after.startsWith(':') ? ':' : '';
-  return (<>{before}<strong>{name}{colon}</strong>{after.slice(colon.length)}</>);
+/**
+ * Dialog sentence with the two facts in bold: the task name (with its colon) and the time that
+ * will be lost — "**Site Portfolio:** **2:15** for this week will be deleted…"
+ */
+function withFacts(text: string, name: string, time: string): ReactNode {
+  return text.split(/(\{name\}:?|\{time\})/).map((part, i) =>
+    part.startsWith('{name}') ? <strong key={i}>{name}{part.slice(6)}</strong>
+    : part === '{time}' ? <strong key={i} className="t-numeric-inline">{time}</strong>
+    : part,
+  );
 }
 
 /** Briefly highlights a row (grid or sidebar) so the eye finds what came back or was added */
 function flash(selector: string) {
   requestAnimationFrame(() => {
     document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       el.classList.remove('is-new');
       void el.offsetWidth; // restart the animation
       el.classList.add('is-new');
@@ -155,6 +159,14 @@ export default function App() {
             update(() => result.data);
             return result.taskId;
           }}
+          onPickTask={(id) => {
+            const task = data.tasks.find((x) => x.id === id);
+            const inWeek = (data.weeks[toISODate(mondayOf(now))] ?? []).includes(id);
+            // Already here and visible: just show where it is
+            if (task && inWeek && !task.hidden) return flash(`[data-row="${id}"]`);
+            withUndo(id, (d) => ensureInWeek(setHidden(d, id, false), id, now), tf(lang, 'toastAdded', { name: nameOf(id) }));
+            flash(`[data-row="${id}"], [data-task="${id}"]`);
+          }}
           onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
           onRename={onRename}
           nameError={nameError}
@@ -171,7 +183,7 @@ export default function App() {
         return (
         <ConfirmDialog
           title={t(lang, kind === 'remove' ? 'removeTitle' : 'deleteTitle')}
-          body={withName(tf(lang, key, { time }), nameOf(taskId))}
+          body={withFacts(t(lang, key), nameOf(taskId), time)}
           confirmLabel={t(lang, kind === 'remove' ? 'remove' : 'delete')}
           cancelLabel={t(lang, 'cancel')}
           onConfirm={() => {

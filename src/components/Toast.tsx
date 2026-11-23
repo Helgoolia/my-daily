@@ -32,7 +32,8 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
     if (!toast?.onUndo) return;
     const onKey = (e: KeyboardEvent) => {
       const typing = (e.target as HTMLElement).closest('input, textarea');
-      if (!typing && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      // e.code, not e.key: with the Ukrainian layout the Z key gives 'я'. Shift = redo, not ours.
+      if (!typing && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.code === 'KeyZ') {
         e.preventDefault();
         toast.onUndo?.();
         onClose();

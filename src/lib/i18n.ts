@@ -1,6 +1,6 @@
 import type { Settings } from '../data/types';
 
-type Lang = Settings['language'];
+export type Lang = Settings['language'];
 
 const strings = {
   en: {
@@ -49,6 +49,17 @@ const strings = {
     toastRestored: 'Restored: {name}',
     toastAdded: 'Added to this week: {name}',
     nameExists: 'A task named {name} already exists',
+    thisWeek: 'This week',
+    trackingNow: 'Tracking now',
+    notTracked: 'No time yet',
+    metaRunning: 'tracking now',
+    metaInWeek: 'in this week',
+    metaLastTracked: 'last tracked {ago}',
+    metaNotTracked: 'no time yet',
+    metaHidden: 'Hidden',
+    createTask: 'Create task “{name}”',
+    emptyTasks: 'Your tasks will appear here.',
+    allHidden: 'All tasks are hidden.',
     taskName: 'Task name',
     theme: 'Theme',
     light: 'Light',
@@ -101,6 +112,17 @@ const strings = {
     toastRestored: 'Повернуто: {name}',
     toastAdded: 'Додано в цей тиждень: {name}',
     nameExists: 'Задача з назвою {name} вже існує',
+    thisWeek: 'Цього тижня',
+    trackingNow: 'Таймер іде',
+    notTracked: 'Часу ще немає',
+    metaRunning: 'таймер іде',
+    metaInWeek: 'у цьому тижні',
+    metaLastTracked: 'востаннє {ago}',
+    metaNotTracked: 'часу ще немає',
+    metaHidden: 'прихована',
+    createTask: 'Створити задачу «{name}»',
+    emptyTasks: 'Тут з’являться ваші задачі.',
+    allHidden: 'Усі задачі приховані.',
     taskName: 'Назва задачі',
     theme: 'Тема',
     light: 'Світла',

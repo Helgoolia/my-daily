@@ -11,7 +11,7 @@ decisions; match the Figma screens and component descriptions, ask when they dis
 ## Styling
 - Plain CSS with tokens from `src/styles/tokens.css` (generated from Figma variables). Never hard-code
   colours, spacing or radii — use `var(--…)`. No Tailwind.
-- Text styles keep their Figma names: Body/M → `.t-body-m`, Numeric/S → `.t-numeric-s`, etc.
+- Text styles keep their Figma names: Body/M → `.t-body-m`, Numeric/S-Medium → `.t-numeric-s-medium`, Numeric/M (Regular, week cells) → `.t-numeric-m`, etc.
 - Fonts: **Fixel Text** for all text; **Public Sans** only inside Numeric styles — digits and `: – ·`
   spaces, never words (it has no Cyrillic; the @font-face `unicode-range` enforces this).
 - Themes: system by default; `<html data-theme="light|dark">` overrides. Colours use `light-dark()`.

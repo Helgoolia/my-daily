@@ -115,6 +115,10 @@
   border-radius: var(--radius-10);
 }
 .add-task:hover { background: var(--state-hover); }
+/* Text left in the field after clicking away: it looks like a filled input (Figma Input · Filled),
+   so it doesn't read as a task row. Hover = base fill + state layer. */
+.add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)) { background: var(--bg-control); }
+.add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)):hover { background: linear-gradient(var(--state-hover), var(--state-hover)), var(--bg-control); }
 .add-task:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; background: none; }
 .add-task-icon { color: var(--text-secondary); flex: none; }
 .add-task-input {
@@ -129,6 +133,7 @@
   line-height: 20px; /* inputs ignore the inherited line-height; without this the text sits high */
 }
 .add-task-input::placeholder { color: var(--text-secondary); }
+.add-task:not(:focus-within) .add-task-hint { display: none; } /* Enter works only while typing */
 .add-task-hint { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--text-subtle); }
 .cell-total { justify-content: flex-end; }
 
@@ -147,3 +152,10 @@
 .row.is-new { animation: row-new 1200ms ease-out; }
 @keyframes row-new { from { background: var(--state-pressed); } to { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .row.is-new { animation: none; } }
+
+/* Suggestions under "Name a task" — Figma Flow 10: 360 wide, name + meta, "Create task" last */
+.menu.suggestions { width: 360px; }
+.suggestion { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--space-2); }
+.suggestion-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggestion-meta { color: var(--text-secondary); }
+.menu-item.is-active { background: var(--state-hover); }

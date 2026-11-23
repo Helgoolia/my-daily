@@ -36,3 +36,5 @@
 .button-destructive:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
 .button-primary { background: var(--bg-accent); color: var(--text-on-accent); }
 .button-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
+/* Time inside a sentence: the Numeric family (Public Sans digits) at the sentence's size */
+.dialog-body .t-numeric-inline { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }

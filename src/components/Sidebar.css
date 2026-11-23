@@ -179,5 +179,7 @@
   cursor: pointer;
 }
 .segment.is-icon { padding: 0; }
-.segment:hover { color: var(--text-primary); }
-.segment.is-selected { background: var(--bg-control); color: var(--text-primary); }
+.segment:hover { color: var(--text-primary); background: var(--state-hover); } /* Figma Segment · Hovered */
+.segment.is-selected { background: var(--bg-elevated); color: var(--text-primary); } /* Figma Segment · Selected = bg/elevated */
+
+.sidebar-empty { margin: 0; padding: 0 var(--space-8); color: var(--text-secondary); }
