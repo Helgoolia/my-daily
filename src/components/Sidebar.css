@@ -46,7 +46,17 @@
 .section-header { display: flex; align-items: baseline; gap: var(--space-8); margin: 0; font: inherit; }
 .section-count { color: var(--text-secondary); }
 
-.columns { display: flex; justify-content: space-between; padding: 0 var(--space-8); color: var(--text-secondary); }
+.columns {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  color: var(--text-secondary);
+  /* Same right edge as the list below: reserve the same scrollbar gutter (its width differs by OS) */
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  margin-right: calc(-1 * var(--space-8));
+  padding-right: var(--space-16);
+}
 
 .task-list { list-style: none; margin: 0; padding: 0; }
 .task-item {
