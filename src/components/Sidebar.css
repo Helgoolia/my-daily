@@ -39,24 +39,17 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  margin-right: calc(-1 * var(--space-8)); /* the thin scrollbar sits in the sidebar padding, not over the totals */
-  padding-right: var(--space-8);
+  /* Rows keep the full sidebar width (totals line up with the All-time label and the collapse icon, as in
+     Figma); the scrollbar lives in the sidebar's right padding. --gutter = the OS scrollbar width, set in JS
+     (0 for overlay scrollbars on macOS). */
+  margin-right: calc(-1 * var(--space-16));
+  padding-right: calc(var(--space-16) - var(--gutter, 0px));
   scrollbar-gutter: stable;
 }
 .section-header { display: flex; align-items: baseline; gap: var(--space-8); margin: 0; font: inherit; }
 .section-count { color: var(--text-secondary); }
 
-.columns {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 var(--space-8);
-  color: var(--text-secondary);
-  /* Same right edge as the list below: reserve the same scrollbar gutter (its width differs by OS) */
-  overflow: hidden;
-  scrollbar-gutter: stable;
-  margin-right: calc(-1 * var(--space-8));
-  padding-right: var(--space-16);
-}
+.columns { display: flex; justify-content: space-between; padding: 0 var(--space-8); color: var(--text-secondary); }
 
 .task-list { list-style: none; margin: 0; padding: 0; }
 .task-item {

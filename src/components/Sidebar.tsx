@@ -11,7 +11,7 @@ import {
   IconSun,
   IconTrash,
 } from '@tabler/icons-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { AppData, Settings, Task } from '../data/types';
 import { t, tf } from '../lib/i18n';
 import { formatMinutes, mondayOf, toISODate } from '../lib/time';
@@ -42,6 +42,15 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   const lang = data.settings.language;
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  // Scrollbar width differs by OS; measured once so the list can give exactly that much of its padding to it
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const s = getComputedStyle(el);
+    const gutter = el.offsetWidth - el.clientWidth - parseFloat(s.borderLeftWidth) - parseFloat(s.borderRightWidth);
+    el.style.setProperty('--gutter', `${Math.max(0, Math.min(16, gutter))}px`);
+  }, []);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const weekRows = new Set(data.weeks[toISODate(mondayOf(now))] ?? []);
 
@@ -147,7 +156,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
         </div>
 
         {/* Only the lists scroll; title, sort and column labels stay put (Figma: Sidebar / Tasks) */}
-        <div className="task-scroll">
+        <div className="task-scroll" ref={scrollRef}>
         <ul className="task-list">{visible.map(row)}</ul>
 
         {hidden.length > 0 && (
