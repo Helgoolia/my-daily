@@ -1,6 +1,6 @@
 import type { Settings } from '../data/types';
 
-type Lang = Settings['language'];
+export type Lang = Settings['language'];
 
 const strings = {
   en: {
@@ -49,6 +49,16 @@ const strings = {
     toastRestored: 'Restored: {name}',
     toastAdded: 'Added to this week: {name}',
     nameExists: 'A task named {name} already exists',
+    thisWeek: 'This week',
+    trackingNow: 'Tracking now',
+    notTracked: 'Not tracked yet',
+    metaInWeek: 'in this week',
+    metaLastTracked: 'last tracked {ago}',
+    metaNotTracked: 'not tracked yet',
+    metaHidden: 'Hidden',
+    createTask: 'Create task “{name}”',
+    emptyTasks: 'Your tasks will appear here.',
+    allHidden: 'All tasks are hidden.',
     taskName: 'Task name',
     theme: 'Theme',
     light: 'Light',
@@ -101,6 +111,16 @@ const strings = {
     toastRestored: 'Повернуто: {name}',
     toastAdded: 'Додано в цей тиждень: {name}',
     nameExists: 'Задача з назвою {name} вже існує',
+    thisWeek: 'Цього тижня',
+    trackingNow: 'Зараз відстежується',
+    notTracked: 'Ще не відстежувалась',
+    metaInWeek: 'у цьому тижні',
+    metaLastTracked: 'востаннє {ago}',
+    metaNotTracked: 'ще не відстежувалась',
+    metaHidden: 'прихована',
+    createTask: 'Створити задачу «{name}»',
+    emptyTasks: 'Тут з’являться ваші задачі.',
+    allHidden: 'Усі задачі приховані.',
     taskName: 'Назва задачі',
     theme: 'Тема',
     light: 'Світла',

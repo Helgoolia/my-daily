@@ -147,3 +147,10 @@
 .row.is-new { animation: row-new 1200ms ease-out; }
 @keyframes row-new { from { background: var(--state-pressed); } to { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .row.is-new { animation: none; } }
+
+/* Suggestions under "Name a task" — Figma Flow 10: 360 wide, name + meta, "Create task" last */
+.menu.suggestions { width: 360px; }
+.suggestion { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--space-2); }
+.suggestion-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggestion-meta { color: var(--text-secondary); }
+.menu-item.is-active { background: var(--state-hover); }

@@ -14,6 +14,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { AppData, Settings, Task } from '../data/types';
 import { t, tf } from '../lib/i18n';
+import { rowStatus, taskInfos } from '../lib/taskInfo';
 import { formatMinutes, mondayOf, toISODate } from '../lib/time';
 import { Logo } from './Logo';
 import { MoreMenu } from './MoreMenu';
@@ -51,7 +52,11 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
     const gutter = el.offsetWidth - el.clientWidth - parseFloat(s.borderLeftWidth) - parseFloat(s.borderRightWidth);
     el.style.setProperty('--gutter', `${Math.max(0, Math.min(16, gutter))}px`);
   }, []);
-  const [hiddenOpen, setHiddenOpen] = useState(false);
+  // null = automatic: open when every task is hidden (Figma: Week · All hidden), closed otherwise
+  const [hiddenOpenChoice, setHiddenOpen] = useState<boolean | null>(null);
+  // Pointer/focus on a row's quick action: its own tooltip replaces the row tooltip
+  const [actionFor, setActionFor] = useState<string | null>(null);
+  const infos = taskInfos(data, now);
   const weekRows = new Set(data.weeks[toISODate(mondayOf(now))] ?? []);
 
   // All-time total and last use per task, including the running session.
@@ -76,12 +81,22 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
     });
   const visible = sorted(data.tasks.filter((x) => !x.hidden));
   const hidden = sorted(data.tasks.filter((x) => x.hidden));
+  const hiddenOpen = hiddenOpenChoice ?? visible.length === 0;
 
   const row = (task: Task) => {
     const running = timer?.taskId === task.id;
     const inWeek = weekRows.has(task.id);
+    const info = infos.get(task.id);
     return (
-      <li key={task.id} data-task={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''} ${menuFor === task.id ? 'is-active' : ''} ${editing === task.id ? 'is-editing' : ''}`}>
+      // Row tooltip on every row (Figma, Sidebar Task Item): name + status, right of the row
+      <Tooltip
+        key={task.id}
+        label={task.name}
+        description={info ? rowStatus(lang, info, now) : undefined}
+        placement="right-of-row"
+        suppressed={actionFor === task.id || menuFor === task.id || editing === task.id}
+      >
+      <li data-task={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''} ${menuFor === task.id ? 'is-active' : ''} ${editing === task.id ? 'is-editing' : ''}`}>
         {editing === task.id ? (
           <RenameInput
             initial={task.name}
@@ -96,10 +111,8 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             validate={(name) => nameError(task.id, name)}
           />
         ) : (
-          <Tooltip label={task.name} placement="right-of-row" onlyIfTruncated>
-            {/* Double-click renames; a single click never does */}
-            <span className="task-item-name t-body-s-medium" onDoubleClick={() => setEditing(task.id)}>{task.name}</span>
-          </Tooltip>
+          // Double-click renames; a single click never does
+          <span className="task-item-name t-body-s-medium" onDoubleClick={() => setEditing(task.id)}>{task.name}</span>
         )}
         <span className="task-item-side">
           <span className="row-more">
@@ -118,14 +131,15 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             />
           </span>
           {task.hidden ? (
-            <QuickAction label={t(lang, 'unhide')} onClick={() => onUnhide(task.id)} icon={<IconEye size={12} />} />
+            <QuickAction label={t(lang, 'unhide')} onClick={() => onUnhide(task.id)} onActive={(a) => setActionFor(a ? task.id : null)} icon={<IconEye size={12} />} />
           ) : (
-            !inWeek && <QuickAction label={t(lang, 'addToThisWeek')} onClick={() => onAddToWeek(task.id)} icon={<IconCalendarPlus size={12} />} />
+            !inWeek && <QuickAction label={t(lang, 'addToThisWeek')} onClick={() => onAddToWeek(task.id)} onActive={(a) => setActionFor(a ? task.id : null)} icon={<IconCalendarPlus size={12} />} />
           )}
           {running && <span className="running-dot" aria-label={t(lang, 'running')} />}
           <span className="task-item-total t-numeric-s">{formatMinutes(total.get(task.id) ?? 0)}</span>
         </span>
       </li>
+      </Tooltip>
     );
   };
 
@@ -148,20 +162,27 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
           <span className="t-numeric-m section-count">{visible.length}</span>
         </h2>
 
-        <SortMenu value={data.settings.sort} lang={lang} onChange={(sort) => onSettings({ sort })} />
-
-        <div className="columns t-overline">
-          <span>{t(lang, 'task')}</span>
-          <span>{t(lang, 'allTime')}</span>
-        </div>
+        {visible.length > 0 ? (
+          <>
+            {/* Shown from one task, so people see sorting exists (it also orders the Hidden list) */}
+            <SortMenu value={data.settings.sort} lang={lang} onChange={(sort) => onSettings({ sort })} />
+            <div className="columns t-overline">
+              <span>{t(lang, 'task')}</span>
+              <span>{t(lang, 'allTime')}</span>
+            </div>
+          </>
+        ) : (
+          // Figma: Week · Empty / Week · All hidden — no sort, no column labels, one line
+          <p className="sidebar-empty t-body-s">{t(lang, hidden.length ? 'allHidden' : 'emptyTasks')}</p>
+        )}
 
         {/* Only the lists scroll; title, sort and column labels stay put (Figma: Sidebar / Tasks) */}
         <div className="task-scroll" ref={scrollRef}>
-        <ul className="task-list">{visible.map(row)}</ul>
+        {visible.length > 0 && <ul className="task-list">{visible.map(row)}</ul>}
 
         {hidden.length > 0 && (
           <div className="hidden-toggle">
-            <button type="button" className="text-button t-body-s-medium" aria-expanded={hiddenOpen} onClick={() => setHiddenOpen((o) => !o)}>
+            <button type="button" className="text-button t-body-s-medium" aria-expanded={hiddenOpen} onClick={() => setHiddenOpen(!hiddenOpen)}>
               {t(lang, 'hidden')} ({hidden.length})
               <IconChevronDown size={12} className={hiddenOpen ? 'is-flipped' : ''} />
             </button>
@@ -185,10 +206,19 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   );
 }
 
-function QuickAction({ label, onClick, icon }: { label: string; onClick: () => void; icon: React.ReactNode }) {
+function QuickAction({ label, onClick, onActive, icon }: { label: string; onClick: () => void; onActive: (active: boolean) => void; icon: React.ReactNode }) {
   return (
     <Tooltip label={label} placement="right-of-row">
-      <button type="button" className="ghost-icon is-small" onClick={onClick} aria-label={label}>
+      <button
+        type="button"
+        className="ghost-icon is-small"
+        onClick={onClick}
+        aria-label={label}
+        onMouseEnter={() => onActive(true)}
+        onMouseLeave={() => onActive(false)}
+        onFocus={() => onActive(true)}
+        onBlur={() => onActive(false)}
+      >
         {icon}
       </button>
     </Tooltip>

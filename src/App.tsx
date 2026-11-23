@@ -18,7 +18,7 @@ import {
 import type { AppData } from './data/types';
 import { t, tf } from './lib/i18n';
 import { allTimeTotal } from './lib/totals';
-import { formatMinutes, mondayOf } from './lib/time';
+import { formatMinutes, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
 type Confirm = { kind: 'remove' | 'delete'; taskId: string };
@@ -36,6 +36,7 @@ function withName(text: string, name: string): ReactNode {
 function flash(selector: string) {
   requestAnimationFrame(() => {
     document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       el.classList.remove('is-new');
       void el.offsetWidth; // restart the animation
       el.classList.add('is-new');
@@ -154,6 +155,14 @@ export default function App() {
             const result = addTaskToWeek(data, name, now);
             update(() => result.data);
             return result.taskId;
+          }}
+          onPickTask={(id) => {
+            const task = data.tasks.find((x) => x.id === id);
+            const inWeek = (data.weeks[toISODate(mondayOf(now))] ?? []).includes(id);
+            // Already here and visible: just show where it is
+            if (task && inWeek && !task.hidden) return flash(`[data-row="${id}"]`);
+            withUndo(id, (d) => ensureInWeek(setHidden(d, id, false), id, now), tf(lang, 'toastAdded', { name: nameOf(id) }));
+            flash(`[data-row="${id}"], [data-task="${id}"]`);
           }}
           onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
           onRename={onRename}

@@ -4,6 +4,7 @@ import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
 import { dayTotal, minutesFor, taskTotalInRange } from '../lib/totals';
+import { suggestions } from '../lib/taskInfo';
 import { AddTask } from './AddTask';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
@@ -18,6 +19,8 @@ type Props = {
   onStop: () => void;
   /** Returns the id of the created (or re-used) task, so focus can move to its ▶ */
   onAddTask: (name: string) => string | null;
+  /** A suggestion was picked: bring that task into this week */
+  onPickTask: (taskId: string) => void;
   onExpandSidebar?: () => void;
   /** Returns an error message (name taken) or null when renamed */
   onRename: (taskId: string, name: string) => string | null;
@@ -29,7 +32,7 @@ type Props = {
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const lang = data.settings.language;
@@ -209,7 +212,12 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
         )}
       </div>
 
-      <AddTask lang={lang} onAdd={(name) => { flashTask.current = onAddTask(name); }} />
+      <AddTask
+        lang={lang}
+        getSuggestions={(q) => suggestions(data, q, lang, now)}
+        onAdd={(name) => { flashTask.current = onAddTask(name); }}
+        onPick={onPickTask}
+      />
     </section>
   );
 }

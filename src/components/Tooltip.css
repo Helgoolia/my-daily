@@ -11,3 +11,7 @@
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* Two lines (Figma Tooltip · Show description): name + status */
+.tooltip-label, .tooltip-description { display: block; }
+.tooltip-description { color: var(--text-inverse-secondary); }
