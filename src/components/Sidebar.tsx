@@ -5,14 +5,19 @@ import {
   IconCheck,
   IconChevronDown,
   IconEye,
+  IconEyeOff,
   IconMoon,
+  IconPencil,
   IconSun,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { AppData, Settings, Task } from '../data/types';
-import { t } from '../lib/i18n';
+import { t, tf } from '../lib/i18n';
 import { formatMinutes, mondayOf, toISODate } from '../lib/time';
 import { Logo } from './Logo';
+import { MoreMenu } from './MoreMenu';
+import { RenameInput } from './RenameInput';
 import { Tooltip } from './Tooltip';
 import './Sidebar.css';
 
@@ -23,13 +28,19 @@ type Props = {
   onAddToWeek: (taskId: string) => void;
   onUnhide: (taskId: string) => void;
   onSettings: (patch: Partial<Settings>) => void;
+  /** Returns an error message (name taken) or null when renamed */
+  onRename: (taskId: string, name: string) => string | null;
+  onHide: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 };
 
 const SORTS: Settings['sort'][] = ['most-tracked', 'recent', 'name'];
 
 /** Sidebar — Figma: Components / Sidebar (280, padding 24/16/16/16, gap 24). */
-export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings }: Props) {
+export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, onHide, onDelete }: Props) {
   const lang = data.settings.language;
+  const [editing, setEditing] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const weekRows = new Set(data.weeks[toISODate(mondayOf(now))] ?? []);
 
@@ -60,11 +71,41 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
     const running = timer?.taskId === task.id;
     const inWeek = weekRows.has(task.id);
     return (
-      <li key={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''}`}>
-        <Tooltip label={task.name} placement="right-of-row" onlyIfTruncated>
-          <span className="task-item-name t-body-s-medium">{task.name}</span>
-        </Tooltip>
+      <li key={task.id} data-task={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''} ${menuFor === task.id || editing === task.id ? 'is-active' : ''}`}>
+        {editing === task.id ? (
+          <RenameInput
+            initial={task.name}
+            label={t(lang, 'taskName')}
+            className="t-body-s-medium is-small"
+            onSave={(name) => {
+              const err = onRename(task.id, name);
+              if (!err) setEditing(null);
+              return err;
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        ) : (
+          <Tooltip label={task.name} placement="right-of-row" onlyIfTruncated>
+            {/* Double-click renames; a single click never does */}
+            <span className="task-item-name t-body-s-medium" onDoubleClick={() => setEditing(task.id)}>{task.name}</span>
+          </Tooltip>
+        )}
         <span className="task-item-side">
+          <span className="row-more">
+            <MoreMenu
+              size="s"
+              label={`${t(lang, 'moreActions')}: ${task.name}`}
+              onOpenChange={(o) => setMenuFor(o ? task.id : null)}
+              entries={[
+                { kind: 'item', label: t(lang, 'rename'), icon: <IconPencil size={16} />, onSelect: () => setEditing(task.id) },
+                task.hidden
+                  ? { kind: 'item', label: t(lang, 'restore'), icon: <IconEye size={16} />, onSelect: () => onUnhide(task.id) }
+                  : { kind: 'item', label: t(lang, 'hide'), description: tf(lang, 'hideHint', { time: formatMinutes(total.get(task.id) ?? 0) }), icon: <IconEyeOff size={16} />, onSelect: () => onHide(task.id) },
+                { kind: 'divider' },
+                { kind: 'item', label: t(lang, 'delete'), icon: <IconTrash size={16} />, destructive: true, onSelect: () => onDelete(task.id) },
+              ]}
+            />
+          </span>
           {task.hidden ? (
             <QuickAction label={t(lang, 'unhide')} onClick={() => onUnhide(task.id)} icon={<IconEye size={12} />} />
           ) : (

@@ -1,0 +1,14 @@
+/* Floating menu (portal) — same surface as the Sort menu */
+.menu.is-floating {
+  position: fixed;
+  z-index: 40;
+}
+.menu-item.has-icon { justify-content: flex-start; align-items: flex-start; }
+.menu-item-icon { display: inline-grid; place-items: center; width: 16px; height: 20px; flex: none; color: var(--text-secondary); }
+.menu-item-text { display: flex; flex-direction: column; gap: var(--space-2); text-align: left; }
+.menu-item-description { color: var(--text-secondary); }
+.menu-item.is-destructive, .menu-item.is-destructive .menu-item-icon { color: var(--text-error); }
+.menu-item:focus-visible { outline: none; background: var(--state-hover); }
+.menu-divider { height: 1px; margin: var(--space-4) 0; background: var(--border-divider); }
+
+.ghost-icon.is-pressed { background: var(--state-pressed); }

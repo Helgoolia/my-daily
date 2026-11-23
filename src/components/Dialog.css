@@ -1,0 +1,38 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: var(--bg-scrim);
+}
+.dialog {
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  padding: var(--space-24);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-16);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+.dialog-title { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dialog-body { margin: var(--space-8) 0 0; color: var(--text-secondary); overflow-wrap: anywhere; }
+.dialog-body strong { font-weight: 500; color: var(--text-primary); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-8); margin-top: var(--space-24); }
+
+/* Button M: 32 high, radius 10, padding 0 12 */
+.button {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-12);
+  border: 1px solid transparent;
+  border-radius: var(--radius-10);
+  cursor: pointer;
+}
+.button-secondary { border-color: var(--border-default); background: var(--bg-control); color: var(--text-primary); }
+.button-secondary:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.button-destructive { background: var(--bg-danger); color: var(--text-on-danger); }
+.button-destructive:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.button-primary { background: var(--bg-accent); color: var(--text-on-accent); }
+.button-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
