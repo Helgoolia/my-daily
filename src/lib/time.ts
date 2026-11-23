@@ -41,6 +41,36 @@ export function parseDuration(input: string): ParsedDuration {
     : { ok: true, minutes: decimal, ambiguous: { decimal, hoursMinutes } };
 }
 
+/**
+ * Typed into a week cell (Figma Input Type=Time): "2:30", "230" → 2:30, "2" → 2:00, "2h30", "2h",
+ * "90m", "45" → 0:45 (two digits above 24 are minutes), "1.5" / "1,5" → 1:30. Empty means 0:00 (clears the cell). Returns null when it can't be read.
+ */
+export function parseCellTime(input: string): number | null {
+  const v = input.trim().toLowerCase().replace(/\s+/g, '');
+  if (v === '') return 0;
+  let m = v.match(/^(\d{1,2}):([0-5]\d)$/);
+  if (m) return Number(m[1]) * 60 + Number(m[2]);
+  m = v.match(/^(\d{1,2})[hг](?:([0-5]?\d)(?:m|хв)?)?$/);
+  if (m) return Number(m[1]) * 60 + Number(m[2] ?? 0);
+  m = v.match(/^(\d{1,4})(?:m|хв)$/);
+  if (m) return Number(m[1]);
+  // 1–2 digits: hours up to 24 ("2" = 2:00); above that it can only mean minutes ("45" = 0:45)
+  m = v.match(/^(\d{1,2})$/);
+  if (m) return Number(m[1]) <= 24 ? Number(m[1]) * 60 : Number(m[1]);
+  m = v.match(/^(\d{3,4})$/);
+  if (m) { const mm = Number(v.slice(-2)); return mm <= 59 ? Number(v.slice(0, -2)) * 60 + mm : null; }
+  const d = parseDuration(v);
+  return d.ok ? d.minutes : null;
+}
+
+/** While typing: "230" → "2:30", "1234" → "12:34" (digits only; a typed colon is left alone). */
+export function autoColon(v: string): string {
+  // Keep typing after the colon appeared: "2:357" → "23:57"
+  const shifted = v.match(/^(\d{1,2}):(\d{3})$/);
+  const digits = shifted ? shifted[1] + shifted[2] : v;
+  return /^\d{3,4}$/.test(digits) ? `${digits.slice(0, -2)}:${digits.slice(-2)}` : v;
+}
+
 /** Local calendar day as "YYYY-MM-DD" (not UTC — a late-evening session belongs to today). */
 export function toISODate(d: Date): ISODate {
   const y = d.getFullYear();

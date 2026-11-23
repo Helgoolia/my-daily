@@ -11,7 +11,9 @@ export function demoData(now = new Date()): AppData {
   const names = ['My Daily (Web App)', 'Exploring (CV, jobs, Linkdn)', 'Site Portfolio', 'Case (PereHOD-Nava)', 'UX/UI AI exploring', 'Product Metrics (Basic)'];
   const tasks: Task[] = names.map((name, i) => ({ id: `t${i + 1}`, name, hidden: false, createdAt: created }));
 
-  // minutes for Mon, Tue, Wed
+  // Three sample days ending today (day before yesterday, yesterday, today). Future days never get
+  // time — on a Monday only today's column is used, the earlier ones would fall in last week.
+  const todayIndex = (now.getDay() + 6) % 7;
   const grid: number[][] = [
     [150, 120, 85],
     [60, 90, 30],
@@ -23,7 +25,8 @@ export function demoData(now = new Date()): AppData {
   const entries: Entry[] = [];
   grid.forEach((row, ti) =>
     row.forEach((minutes, di) => {
-      if (minutes > 0) entries.push({ id: `e${ti}-${di}`, taskId: tasks[ti].id, date: day(di), minutes, source: 'manual' });
+      const index = todayIndex - 2 + di;
+      if (minutes > 0 && index >= 0) entries.push({ id: `e${ti}-${di}`, taskId: tasks[ti].id, date: day(index), minutes, source: 'manual' });
     }),
   );
 

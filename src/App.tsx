@@ -9,6 +9,7 @@ import {
   ensureInWeek,
   hideTask,
   removeFromWeek,
+  setDayMinutes,
   renameTask,
   setHidden,
   startTimer,
@@ -16,9 +17,9 @@ import {
   weekMinutes,
 } from './data/actions';
 import type { AppData } from './data/types';
-import { t, tf } from './lib/i18n';
+import { t, tf, weekdayShort } from './lib/i18n';
 import { allTimeTotal } from './lib/totals';
-import { formatMinutes, mondayOf, toISODate } from './lib/time';
+import { formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
 type Confirm = { kind: 'remove' | 'delete'; taskId: string };
@@ -59,6 +60,7 @@ export default function App() {
 
   const showToast = (message: string, onUndo?: () => void) =>
     setToast({ id: ++toastId.current, message, undoLabel: onUndo ? t(lang, 'undo') : undefined, onUndo });
+  const showSticky = (message: string) => setToast({ id: ++toastId.current, message, sticky: true, closeLabel: t(lang, 'close') });
 
   /** Applies a change and offers Undo: restores the data from before it, keeping settings changed since. */
   const withUndo = (taskId: string, next: (d: AppData) => AppData, message: string) => {
@@ -101,6 +103,20 @@ export default function App() {
     return result.reason === 'exists' ? tf(lang, 'nameExists', { name: result.existingName ?? name.trim() }) : null;
   };
   const now = useNow(data.timer ? 1000 : 60_000);
+  // A day holds at most 24:00. If typed time plus the running timer reach it, the timer stops right at
+  // the limit (it can't have run longer than the day has room for) and says why.
+  useEffect(() => {
+    const timer = data.timer;
+    if (!timer) return;
+    const started = new Date(timer.startedAt);
+    const date = toISODate(started);
+    const typed = data.entries.reduce((s, e) => (e.date === date ? s + e.minutes : s), 0);
+    const room = 24 * 60 - typed;
+    if ((now.getTime() - started.getTime()) / 60_000 < room) return;
+    update((d) => stopTimer(d, new Date(started.getTime() + Math.max(0, room) * 60_000)));
+    showSticky(t(lang, 'toastDayFull'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [now]);
   const collapsed = data.settings.sidebarCollapsed === true;
   const setSettings = (patch: Partial<typeof data.settings>) => update((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
 
@@ -171,6 +187,14 @@ export default function App() {
           onRename={onRename}
           nameError={nameError}
           onRemoveFromWeek={onRemoveFromWeek}
+          onSetTime={(id, date, minutes) => {
+            const had = data.entries.some((e) => e.taskId === id && e.date === date && e.minutes > 0);
+            // Clearing a cell deletes time → Undo (rule: every remove/delete has Undo)
+            if (minutes <= 0 && had) {
+              const day = fromISODate(date);
+              withUndo(id, (d) => setDayMinutes(d, id, date, 0), tf(lang, 'toastCleared', { name: nameOf(id), day: `${weekdayShort(lang, day)} ${day.getDate()}` }));
+            } else update((d) => setDayMinutes(d, id, date, minutes));
+          }}
         />
       </main>
       {confirm && (() => {

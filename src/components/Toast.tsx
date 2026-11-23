@@ -1,13 +1,23 @@
+import { IconX } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './Toast.css';
 
-export type ToastData = { id: number; message: string; undoLabel?: string; onUndo?: () => void };
+export type ToastData = {
+  id: number;
+  message: string;
+  undoLabel?: string;
+  onUndo?: () => void;
+  /** No timer, × to close — for something the app did by itself (e.g. stopped the timer) */
+  sticky?: boolean;
+  closeLabel?: string;
+};
 
 /**
  * Toast — Figma: Toast. Bottom centre, 24 px above the edge, inverse colours, one at a time.
  * Hides after 5 s; the timer pauses on hover / keyboard focus. Undo (Button Secondary S) and
  * Ctrl/Cmd+Z do the same while it is visible. role="status", aria-live="polite".
+ * Sticky: no timer, a × closes it (Figma: Show close — "Close only when the toast has no timer").
  */
 export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: () => void }) {
   const [paused, setPaused] = useState(false);
@@ -19,7 +29,7 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
   }, [toast?.id]);
 
   useEffect(() => {
-    if (!toast || paused) return;
+    if (!toast || paused || toast.sticky) return;
     started.current = Date.now();
     const id = window.setTimeout(onClose, left.current);
     return () => {
@@ -65,6 +75,11 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
               }}
             >
               {toast.undoLabel}
+            </button>
+          )}
+          {toast.sticky && (
+            <button type="button" className="ghost-icon is-small toast-close" onClick={onClose} aria-label={toast.closeLabel}>
+              <IconX size={16} />
             </button>
           )}
         </div>
