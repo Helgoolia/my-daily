@@ -88,7 +88,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
         </div>
         <div className="week-summary">
           <span className="t-overline week-summary-label">{t(lang, 'weekTotal')}</span>
-          <span className="t-numeric-l">{formatMinutes(weekTotal)}</span>
+          <span className="t-numeric-l-medium">{formatMinutes(weekTotal)}</span>
           {/* Always rendered so the header height doesn't jump when a timer starts or stops */}
           <span className="t-caption week-summary-label" aria-hidden={!runningInWeek} style={{ visibility: runningInWeek ? 'visible' : 'hidden' }}>
             {t(lang, 'includingActiveTimer')}
@@ -192,7 +192,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
                   </div>
                 );
               })}
-              <div className="cell cell-total t-numeric-m" role="cell">
+              <div className="cell cell-total t-numeric-m-medium" role="cell">
                 {formatMinutes(taskTotalInRange(data.entries, task.id, dates) + dates.reduce((s, d) => s + liveMinutes(task.id, d), 0))}
               </div>
             </div>
@@ -204,10 +204,10 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             <div className="cell cell-task t-body-m cell-muted" role="rowheader">{t(lang, 'total')}</div>
             {dates.map((date) => (
               <div key={date} className={`cell cell-time ${date === todayISO ? 'is-today' : ''}`} role="cell">
-                {date <= todayISO && <span className="t-numeric-m">{formatMinutes(dayMinutes(date))}</span>}
+                {date <= todayISO && <span className="t-numeric-m-medium">{formatMinutes(dayMinutes(date))}</span>}
               </div>
             ))}
-            <div className="cell cell-total t-numeric-m" role="cell">{formatMinutes(weekTotal)}</div>
+            <div className="cell cell-total t-numeric-m-medium" role="cell">{formatMinutes(weekTotal)}</div>
           </div>
         )}
       </div>

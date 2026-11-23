@@ -136,7 +136,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             !inWeek && <QuickAction label={t(lang, 'addToThisWeek')} onClick={() => onAddToWeek(task.id)} onActive={(a) => setActionFor(a ? task.id : null)} icon={<IconCalendarPlus size={12} />} />
           )}
           {running && <span className="running-dot" aria-label={t(lang, 'running')} />}
-          <span className="task-item-total t-numeric-s">{formatMinutes(total.get(task.id) ?? 0)}</span>
+          <span className="task-item-total t-numeric-s-medium">{formatMinutes(total.get(task.id) ?? 0)}</span>
         </span>
       </li>
       </Tooltip>
@@ -159,7 +159,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
       <section className="sidebar-tasks">
         <h2 className="section-header">
           <span className="t-body-m-medium">{t(lang, 'allTasks')}</span>
-          <span className="t-numeric-m section-count">{visible.length}</span>
+          <span className="t-numeric-m-medium section-count">{visible.length}</span>
         </h2>
 
         {visible.length > 0 ? (

@@ -9,6 +9,8 @@
   ascent-override: 90%; descent-override: 19%; line-gap-override: 0%; }
 @font-face { font-family: "Fixel Text"; src: url("/fonts/FixelText-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap;
   ascent-override: 90%; descent-override: 19%; line-gap-override: 0%; }
+@font-face { font-family: "Public Sans Numeric"; src: url("/fonts/PublicSans-Regular-digits.woff2") format("woff2"); font-weight: 400; font-display: swap;
+  unicode-range: U+0020, U+002C-002E, U+0030-003A, U+00A0, U+00B7, U+2013, U+2014, U+202F; }
 @font-face { font-family: "Public Sans Numeric"; src: url("/fonts/PublicSans-Medium-digits.woff2") format("woff2"); font-weight: 500; font-display: swap;
   unicode-range: U+0020, U+002C-002E, U+0030-003A, U+00A0, U+00B7, U+2013, U+2014, U+202F; /* digits and : , . – — · spaces only */ }
 
@@ -141,6 +143,8 @@
 .t-caption    { font: 400 12px/16px var(--font-text); }
 .t-overline   { font: 500 12px/16px var(--font-text); letter-spacing: 0.08em; text-transform: uppercase; }
 /* Numbers only: digits and : – · — never words */
-.t-numeric-l  { font: 500 24px/32px var(--font-numeric); font-variant-numeric: tabular-nums; }
-.t-numeric-m  { font: 500 15px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
-.t-numeric-s  { font: 500 13px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
+/* Numeric: week cells are Regular; totals, counts and the sidebar are Medium (Figma Numeric/*-Medium) */
+.t-numeric-l-medium { font: 500 24px/32px var(--font-numeric); font-variant-numeric: tabular-nums; }
+.t-numeric-m        { font: 400 15px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
+.t-numeric-m-medium { font: 500 15px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }
+.t-numeric-s-medium { font: 500 13px/20px var(--font-numeric); font-variant-numeric: tabular-nums; }

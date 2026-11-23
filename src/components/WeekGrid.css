@@ -115,6 +115,10 @@
   border-radius: var(--radius-10);
 }
 .add-task:hover { background: var(--state-hover); }
+/* Text left in the field after clicking away: it looks like a filled input (Figma Input · Filled),
+   so it doesn't read as a task row. Hover = base fill + state layer. */
+.add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)) { background: var(--bg-control); }
+.add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)):hover { background: linear-gradient(var(--state-hover), var(--state-hover)), var(--bg-control); }
 .add-task:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; background: none; }
 .add-task-icon { color: var(--text-secondary); flex: none; }
 .add-task-input {
