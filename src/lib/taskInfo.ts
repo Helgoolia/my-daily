@@ -52,7 +52,9 @@ export function rowStatus(lang: Lang, info: TaskInfo, now: Date): string {
 /** Suggestion meta: "412:00 · last tracked 8 months ago · Hidden" (Figma Flow 10) */
 export function suggestionMeta(lang: Lang, info: TaskInfo, now: Date): string {
   const parts = [formatMinutes(info.total)];
-  if (info.inWeek) parts.push(t(lang, 'metaInWeek'));
+  // Same status as the sidebar tooltip: a running task says so
+  if (info.running) parts.push(t(lang, 'metaRunning'));
+  else if (info.inWeek) parts.push(t(lang, 'metaInWeek'));
   else parts.push(info.last ? tf(lang, 'metaLastTracked', { ago: ago(lang, info.last, now) }) : t(lang, 'metaNotTracked'));
   if (info.task.hidden) parts.push(t(lang, 'metaHidden'));
   return parts.join(' · ');

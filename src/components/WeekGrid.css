@@ -129,6 +129,7 @@
   line-height: 20px; /* inputs ignore the inherited line-height; without this the text sits high */
 }
 .add-task-input::placeholder { color: var(--text-secondary); }
+.add-task:not(:focus-within) .add-task-hint { display: none; } /* Enter works only while typing */
 .add-task-hint { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--text-subtle); }
 .cell-total { justify-content: flex-end; }
 
