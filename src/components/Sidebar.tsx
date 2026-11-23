@@ -1,5 +1,6 @@
 import {
   IconArrowBarLeft,
+  IconArrowsUpDown,
   IconCalendarPlus,
   IconCheck,
   IconChevronDown,
@@ -182,9 +183,18 @@ function SortMenu({ value, lang, onChange }: { value: Settings['sort']; lang: Se
   return (
     <div className="sort" ref={ref}>
       {/* Trigger is Pressed while its menu is open; chevron flips (rule from Figma) */}
-      <button type="button" className={`secondary-button t-body-s-medium ${open ? 'is-pressed' : ''}`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        {t(lang, 'sort')}: {label(value)}
-        <IconChevronDown size={12} className={open ? 'is-flipped' : ''} />
+      {/* ⇅ instead of the word "Sort" (Figma); screen readers still hear "Sort: Most tracked" */}
+      <button
+        type="button"
+        className={`secondary-button t-body-s-medium ${open ? 'is-pressed' : ''}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${t(lang, 'sort')}: ${label(value)}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <IconArrowsUpDown size={12} aria-hidden />
+        {label(value)}
+        <IconChevronDown size={12} className={open ? 'is-flipped' : ''} aria-hidden />
       </button>
       {open && (
         <ul className="menu" role="menu">
