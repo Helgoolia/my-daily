@@ -9,6 +9,7 @@ import {
   ensureInWeek,
   hideTask,
   removeFromWeek,
+  setDayMinutes,
   renameTask,
   setHidden,
   startTimer,
@@ -171,6 +172,7 @@ export default function App() {
           onRename={onRename}
           nameError={nameError}
           onRemoveFromWeek={onRemoveFromWeek}
+          onSetTime={(id, date, minutes) => update((d) => setDayMinutes(d, id, date, minutes))}
         />
       </main>
       {confirm && (() => {

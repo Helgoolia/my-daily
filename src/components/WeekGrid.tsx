@@ -1,4 +1,4 @@
-import { IconArrowBarRight, IconCalendarMinus, IconPencil, IconPlayerPlayFilled, IconPlayerStopFilled } from '@tabler/icons-react';
+import { IconArrowBarRight, IconCalendarMinus, IconPencil } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
@@ -8,6 +8,7 @@ import { suggestions } from '../lib/taskInfo';
 import { AddTask } from './AddTask';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
+import { TimeCell } from './TimeCell';
 import { Tooltip } from './Tooltip';
 import './WeekGrid.css';
 
@@ -26,13 +27,15 @@ type Props = {
   onRename: (taskId: string, name: string) => string | null;
   nameError: (taskId: string, name: string) => string | null;
   onRemoveFromWeek: (taskId: string) => void;
+  /** Edit a cell: that day's time for the task, in minutes (0 clears it) */
+  onSetTime: (taskId: string, date: string, minutes: number) => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const lang = data.settings.language;
@@ -66,7 +69,12 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
 
   const cellMinutes = (taskId: string, date: string) => minutesFor(data.entries, taskId, date) + liveMinutes(taskId, date);
   const dayMinutes = (date: string) => dayTotal(data.entries, date, taskIds) + (timer && runningDate === date && taskIds.includes(timer.taskId) ? runningSeconds / 60 : 0);
-  const weekTotal = dates.reduce((sum, d) => sum + dayMinutes(d), 0);
+  // Totals count only days up to today: future days take no time (and show none)
+  const countedDates = dates.filter((d) => d <= todayISO);
+  const weekTotal = countedDates.reduce((sum, d) => sum + dayMinutes(d), 0);
+  // Day limit counts every task of that day (rows of this week or not) and the running timer
+  const allDayMinutes = (date: string) =>
+    data.entries.reduce((s, e) => (e.date === date ? s + e.minutes : s), 0) + (timer && runningDate === date ? runningSeconds / 60 : 0);
 
   return (
     <section className="week" aria-label={`${monthName(lang, monday)} · ${t(lang, 'week')} ${weekOfMonth(monday)}`}>
@@ -156,44 +164,27 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
                   />
                 </span>
               </div>
-              {dates.map((date) => {
+              {dates.map((date, i) => {
                 const minutes = cellMinutes(task.id, date);
-                const isToday = date === todayISO;
-                const isFuture = date > todayISO;
-                if (isToday) {
-                  return (
-                    <div key={date} className="cell cell-today is-today" role="cell">
-                      {isRunning ? (
-                        <span className="t-numeric-m">
-                          {formatMinutes(minutes)}
-                          <span className="seconds">:{String(Math.floor(minutes * 60 + 1e-6) % 60).padStart(2, '0')}</span>
-                        </span>
-                      ) : (
-                        <span className={`t-numeric-m ${minutes < 1 ? 'cell-subtle' : ''}`}>{formatMinutes(minutes)}</span>
-                      )}
-                      <button
-                        type="button"
-                        className={`icon-button ${isRunning ? 'is-primary' : ''}`}
-                        onClick={() => (isRunning ? onStop() : onStart(task.id))}
-                        aria-label={`${isRunning ? t(lang, 'stop') : t(lang, 'start')}: ${task.name}`}
-                      >
-                        {isRunning ? <IconPlayerStopFilled size={16} /> : <IconPlayerPlayFilled size={16} />}
-                      </button>
-                    </div>
-                  );
-                }
+                const kind = date === todayISO ? 'today' : date > todayISO ? 'future' : 'past';
                 return (
-                  <div key={date} className="cell cell-time" role="cell">
-                    {isFuture ? null : minutes > 0 ? (
-                      <span className="t-numeric-m">{formatMinutes(minutes)}</span>
-                    ) : (
-                      <span className="t-numeric-m cell-subtle">—</span>
-                    )}
-                  </div>
+                  <TimeCell
+                    key={date}
+                    kind={kind}
+                    minutes={minutes}
+                    running={isRunning && runningDate === date}
+                    seconds={Math.floor(minutes * 60 + 1e-6) % 60}
+                    limit={24 * 60 - (allDayMinutes(date) - minutes)}
+                    label={`${task.name} · ${weekdayShort(lang, days[i])} ${days[i].getDate()}`}
+                    lang={lang}
+                    onSave={(m) => onSetTime(task.id, date, m)}
+                    onStart={() => onStart(task.id)}
+                    onStop={onStop}
+                  />
                 );
               })}
               <div className="cell cell-total t-numeric-m-medium" role="cell">
-                {formatMinutes(taskTotalInRange(data.entries, task.id, dates) + dates.reduce((s, d) => s + liveMinutes(task.id, d), 0))}
+                {formatMinutes(taskTotalInRange(data.entries, task.id, countedDates) + countedDates.reduce((s, d) => s + liveMinutes(task.id, d), 0))}
               </div>
             </div>
           );

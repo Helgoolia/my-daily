@@ -159,3 +159,45 @@
 .suggestion-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .suggestion-meta { color: var(--text-secondary); }
 .menu-item.is-active { background: var(--state-hover); }
+
+/* Time Cell (Flow 5) — the time is a button that fills the cell's time area */
+.cell-hit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex: 1;
+  min-width: 0;
+  margin: 0 calc(-1 * var(--space-16));
+  padding: 0 var(--space-16);
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.cell-today .cell-hit { justify-content: flex-start; margin: 0 0 0 calc(-1 * var(--space-12)); padding: 0 var(--space-12); }
+/* Hovered = state layer over the cell (Figma Time Cell · Hovered); a running cell does nothing on hover */
+.cell:has(> .cell-hit:not(.is-running):not(.is-blocked):hover) { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.cell-hit:focus-visible { outline: 2px solid var(--border-focus); outline-offset: -2px; } /* inset ring, cell radius 0 */
+.cell-hit.is-running { cursor: default; }
+/* Future: empty; hover shows the ban icon, cursor not-allowed */
+.cell-hit.is-blocked { cursor: not-allowed; }
+.cell-ban { color: var(--text-subtle); visibility: hidden; }
+.cell-hit.is-blocked:hover .cell-ban, .cell-hit.is-blocked:focus-visible .cell-ban { visibility: visible; }
+
+/* Input Time S (Figma): 28 high, radius 8, bg/control, centred digits; error = red border only */
+.time-input {
+  width: min(84px, 100%);
+  height: 28px;
+  padding: 0 var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-8);
+  background: var(--bg-control);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 20px;
+}
+.cell-today .time-input { text-align: left; }
+.time-input::placeholder { color: var(--text-secondary); }
+.time-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.time-input.has-error, .time-input.has-error:focus { border-color: var(--border-error); outline: none; }

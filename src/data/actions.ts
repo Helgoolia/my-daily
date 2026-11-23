@@ -119,3 +119,13 @@ export function renameTask(data: AppData, taskId: string, rawName: string): Rena
   if (clash) return { ok: false, reason: 'exists', existingName: clash.name };
   return { ok: true, data: { ...data, tasks: data.tasks.map((t) => (t.id === taskId ? { ...t, name } : t)) } };
 }
+
+/**
+ * Edit a cell: that day's entries for the task are replaced with one manual entry
+ * (or none for 0:00). Future days take no entries — the UI never calls this for them.
+ */
+export function setDayMinutes(data: AppData, taskId: string, date: string, minutes: number): AppData {
+  const rest = data.entries.filter((e) => !(e.taskId === taskId && e.date === date));
+  if (minutes <= 0) return { ...data, entries: rest };
+  return { ...data, entries: [...rest, { id: newId(), taskId, date, minutes, source: 'manual' }] };
+}

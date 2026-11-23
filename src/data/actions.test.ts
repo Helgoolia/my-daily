@@ -94,3 +94,16 @@ describe('task actions', () => {
     expect(ok.ok && ok.data.tasks[0].name).toBe('Portfolio website');
   });
 });
+
+describe('setDayMinutes (edit a cell)', () => {
+  it('replaces that day with one manual entry, 0 clears it', async () => {
+    const { setDayMinutes } = await import('./actions');
+    let { data, taskId } = addTaskToWeek(emptyData(), 'A', at(9));
+    data = stopTimer(startTimer(data, taskId!, at(9)), at(10));
+    data = stopTimer(startTimer(data, taskId!, at(11)), at(11, 30));
+    data = setDayMinutes(data, taskId!, '2026-11-20', 105);
+    expect(data.entries).toMatchObject([{ taskId, date: '2026-11-20', minutes: 105, source: 'manual' }]);
+    data = setDayMinutes(data, taskId!, '2026-11-20', 0);
+    expect(data.entries).toEqual([]);
+  });
+});
