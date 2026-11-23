@@ -9,7 +9,7 @@ export type MenuEntry =
 
 /**
  * ••• button + menu — Figma: Menu / Menu Item / Menu Divider.
- * Opens under the trigger, aligned to its right edge, 4 px away (above if there's no room).
+ * Opens under the trigger, left edges aligned, 4 px away (above if there's no room).
  * Portal + position: fixed, so the sidebar's scrolling list can't clip it.
  * Keyboard: focus moves to the first item, ↑↓ move, Enter picks, Esc / click outside closes and
  * returns focus to •••. While open the trigger looks pressed and the row keeps its "menu open" look.
@@ -46,7 +46,7 @@ export function MoreMenu({
     const below = r.bottom + 4 + m.height <= window.innerHeight - 8;
     setPos({
       top: below ? r.bottom + 4 : r.top - 4 - m.height,
-      left: Math.max(8, Math.min(r.right - m.width, window.innerWidth - 8 - m.width)),
+      left: Math.max(8, Math.min(r.left, window.innerWidth - 8 - m.width)),
     });
     menu.current.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
   }, [open]);

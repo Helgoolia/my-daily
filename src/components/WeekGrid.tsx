@@ -21,6 +21,7 @@ type Props = {
   onExpandSidebar?: () => void;
   /** Returns an error message (name taken) or null when renamed */
   onRename: (taskId: string, name: string) => string | null;
+  nameError: (taskId: string, name: string) => string | null;
   onRemoveFromWeek: (taskId: string) => void;
 };
 
@@ -28,7 +29,7 @@ type Props = {
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar, onRename, onRemoveFromWeek }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const lang = data.settings.language;
@@ -44,6 +45,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
     row.classList.remove('is-new');
     void row.offsetWidth; // restart the animation if the same task is added again
     row.classList.add('is-new');
+    row.addEventListener('animationend', () => row.classList.remove('is-new'), { once: true });
   });
   const days = weekDays(monday);
   const dates = days.map(toISODate);
@@ -133,6 +135,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onExpa
                       return err;
                     }}
                     onCancel={() => setEditing(null)}
+            validate={(name) => nameError(task.id, name)}
                   />
                 ) : (
                   <span className="task-name t-body-m-medium" onDoubleClick={() => setEditing(task.id)}>

@@ -61,6 +61,8 @@
 /* ••• appears on hover / focus / while its menu is open; space reserved so names don't jump */
 .task-item .row-more { display: none; }
 .task-item:hover .row-more, .task-item:focus-within .row-more, .task-item.is-active .row-more { display: inline-flex; }
+/* Editing: the state moves to the input, so the row loses its hover fill (Figma) */
+.task-item.is-editing, .task-item.is-editing:hover { background: transparent; }
 .task-item .rename-input.is-small { height: 28px; margin-left: calc(-1 * var(--space-4)); border-radius: var(--radius-8); }
 /* Flash after Restore / Undo: state/hover fades in 300 ms, holds ~1 s, fades out 300 ms */
 .task-item.is-new { animation: item-flash 1600ms ease; }

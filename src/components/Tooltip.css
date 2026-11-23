@@ -5,6 +5,8 @@
   padding: var(--space-8);
   border-radius: var(--radius-8);
   background: var(--bg-inverse);
+  border: 1px solid var(--border-inverse);
+  box-shadow: var(--shadow-popover);
   color: var(--text-inverse);
   pointer-events: none;
   white-space: nowrap;

@@ -30,6 +30,7 @@ type Props = {
   onSettings: (patch: Partial<Settings>) => void;
   /** Returns an error message (name taken) or null when renamed */
   onRename: (taskId: string, name: string) => string | null;
+  nameError: (taskId: string, name: string) => string | null;
   onHide: (taskId: string) => void;
   onDelete: (taskId: string) => void;
 };
@@ -37,7 +38,7 @@ type Props = {
 const SORTS: Settings['sort'][] = ['most-tracked', 'recent', 'name'];
 
 /** Sidebar — Figma: Components / Sidebar (280, padding 24/16/16/16, gap 24). */
-export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, onHide, onDelete }: Props) {
+export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete }: Props) {
   const lang = data.settings.language;
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -71,7 +72,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
     const running = timer?.taskId === task.id;
     const inWeek = weekRows.has(task.id);
     return (
-      <li key={task.id} data-task={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''} ${menuFor === task.id || editing === task.id ? 'is-active' : ''}`}>
+      <li key={task.id} data-task={task.id} className={`task-item ${task.hidden ? 'is-hidden' : ''} ${menuFor === task.id ? 'is-active' : ''} ${editing === task.id ? 'is-editing' : ''}`}>
         {editing === task.id ? (
           <RenameInput
             initial={task.name}
@@ -83,6 +84,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
               return err;
             }}
             onCancel={() => setEditing(null)}
+            validate={(name) => nameError(task.id, name)}
           />
         ) : (
           <Tooltip label={task.name} placement="right-of-row" onlyIfTruncated>

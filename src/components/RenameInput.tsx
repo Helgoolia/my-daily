@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 
 /**
  * Inline rename — Figma: Task Cell / Sidebar Task Item, State=Editing (Input Text S).
- * Enter saves, Esc cancels, leaving the field saves too. A taken name shows an error tooltip
- * above the field and keeps it open; an empty name just cancels.
+ * Enter saves, Esc cancels, leaving the field saves too. A taken name shows the error tooltip
+ * as soon as it's typed (no need to press Enter); while it shows, Enter does nothing and leaving
+ * the field cancels. An empty name just cancels.
  */
 export function RenameInput({
   initial,
@@ -12,6 +13,7 @@ export function RenameInput({
   className = '',
   onSave,
   onCancel,
+  validate,
 }: {
   initial: string;
   label: string;
@@ -19,6 +21,8 @@ export function RenameInput({
   /** Returns an error message, or null when saved */
   onSave: (name: string) => string | null;
   onCancel: () => void;
+  /** Checked on every keystroke: error message or null */
+  validate?: (name: string) => string | null;
 }) {
   const [value, setValue] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +38,12 @@ export function RenameInput({
   useLayoutEffect(() => {
     if (!error || !input.current) return setErrPos(null);
     const r = input.current.getBoundingClientRect();
+    // 8 px above the field (Tooltip offset rule)
     setErrPos({ left: r.left, top: r.top - 8 });
   }, [error]);
 
   const submit = () => {
-    if (done.current) return;
+    if (done.current || error) return;
     if (!value.trim() || value.trim() === initial) {
       done.current = true;
       return onCancel();
@@ -59,7 +64,8 @@ export function RenameInput({
         maxLength={80}
         onChange={(e) => {
           setValue(e.target.value);
-          setError(null);
+          const v = e.target.value;
+          setError(v.trim() && v.trim() !== initial ? (validate?.(v) ?? null) : null);
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') { e.preventDefault(); submit(); }
