@@ -190,7 +190,6 @@ export default function App() {
       <main className="app">
         <WeekGrid
           data={data}
-          key={toISODate(shownMonday)}
           monday={shownMonday}
           now={now}
           isCurrent={isCurrent}

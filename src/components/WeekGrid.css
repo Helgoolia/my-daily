@@ -71,8 +71,8 @@
   flex-direction: column;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 80px;
-  padding: var(--space-12) var(--space-8);
+  height: 80px; /* Figma Day Header: 80 for every type, so the grid doesn't jump between weeks with and without Today */
+  padding: 0 var(--space-8);
 }
 .row-head .cell-day-head.is-today { gap: var(--space-4); } /* Figma Day Header Type=Today: gap 4 */
 .day-head-weekday, .cell-head-label { color: var(--text-secondary); }

@@ -44,6 +44,14 @@ type Props = {
 export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  // Another week on screen: drop a rename in progress (not a remount — that replayed the header's
+  // fade-in, so the sidebar button blinked on every week change)
+  const [shownWeek, setShownWeek] = useState(toISODate(monday));
+  if (shownWeek !== toISODate(monday)) {
+    setShownWeek(toISODate(monday));
+    setEditing(null);
+    setMenuFor(null);
+  }
   const lang = data.settings.language;
   // After adding a task the field lets go of focus and the new row flashes briefly, so the eye finds it;
   // its ▶ is one click away. (Moving focus to ▶ left a yellow ring that read as "active".)
