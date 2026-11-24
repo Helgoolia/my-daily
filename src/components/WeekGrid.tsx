@@ -10,6 +10,8 @@ import { AddTask } from './AddTask';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
 import { TimeCell } from './TimeCell';
+import { SharePopover } from './SharePopover';
+import { useMedia } from '../lib/useAppData';
 import { Tooltip } from './Tooltip';
 import './WeekGrid.css';
 
@@ -35,13 +37,16 @@ type Props = {
   onPrevWeek: () => void;
   onNextWeek: () => void;
   onThisWeek: () => void;
+  /** PNG saved from Share */
+  onShareDownloaded: (fileName: string) => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek, onShareDownloaded }: Props) {
+  const compact = useMedia('(max-width: 899px)');
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   // Another week on screen: drop a rename in progress (not a remount — that replayed the header's
@@ -135,6 +140,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             )}
           </nav>
         </div>
+        <div className="week-header-right">
         <div className="week-summary">
           <span className="t-overline week-summary-label">{t(lang, 'weekTotal')}</span>
           <span className="t-numeric-l-medium">{formatMinutes(weekTotal)}</span>
@@ -142,6 +148,8 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
           <span className="t-caption week-summary-label" aria-hidden={!runningInWeek} style={{ visibility: runningInWeek ? 'visible' : 'hidden' }}>
             {t(lang, 'includingActiveTimer')}
           </span>
+        </div>
+        <SharePopover data={data} monday={monday} now={now} lang={lang} compact={compact} disabled={tasks.length === 0} onDownloaded={onShareDownloaded} />
         </div>
       </header>
 
