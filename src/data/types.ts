@@ -37,8 +37,11 @@ export type Settings = {
 export type ImportBatch = {
   id: string;
   at: ISODateTime;
+  fileName?: string;
   entryIds: string[];
   createdTaskIds: string[];
+  /** [monday, taskId] rows the import added to weeks — removed again by Undo import */
+  addedRows?: [ISODate, string][];
 };
 
 export type AppData = {
