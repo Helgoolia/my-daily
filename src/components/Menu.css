@@ -11,7 +11,9 @@
 .menu-item:focus-visible { outline: none; background: var(--state-hover); }
 .menu-divider { height: 1px; margin: var(--space-4) 0; background: var(--border-divider); }
 
-.ghost-icon.is-pressed { background: var(--state-pressed); }
+/* Trigger of an open menu = Hovered look (state/hover, icon text/primary). Pressed is only the
+   momentary click feedback — kept open it read as a bright square. */
+.ghost-icon.is-pressed { background: var(--state-hover); color: var(--text-primary); }
 
 .menu-item:disabled { opacity: var(--opacity-disabled); cursor: default; background: none; }
 /* Storage note under the Data menu: Body/S, text/secondary, menu item padding */
