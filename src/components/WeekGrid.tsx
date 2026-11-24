@@ -227,7 +227,12 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             <div className="cell cell-task t-body-m cell-muted" role="rowheader">{t(lang, 'total')}</div>
             {dates.map((date) => (
               <div key={date} className={`cell cell-time ${date === todayISO ? 'is-today' : ''}`} role="cell">
-                {date <= todayISO && <span className="t-numeric-m-medium">{formatMinutes(dayMinutes(date))}</span>}
+                {/* Same as the cells: a past day with no time is «—», today with none is 0:00 in subtle */}
+                {date <= todayISO && (() => {
+                  const m = dayMinutes(date);
+                  if (m >= 1 / 60) return <span className="t-numeric-m-medium">{formatMinutes(m)}</span>;
+                  return <span className="t-numeric-m-medium cell-subtle">{date < todayISO ? '—' : formatMinutes(0)}</span>;
+                })()}
               </div>
             ))}
             <div className="cell cell-total t-numeric-m-medium" role="cell">{formatMinutes(weekTotal)}</div>
