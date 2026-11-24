@@ -1,5 +1,23 @@
 .week {
+  /* Column widths (Figma 5 · Narrow windows): 280/100, compressed below 1024 to 200/88 */
+  --task-w: 280px;
+  --total-w: 100px;
   padding: var(--space-24);
+}
+@media (max-width: 1023px) { .week { --task-w: 200px; --total-w: 88px; } }
+
+/* Day header stays on top while the rows scroll (any width where the page scrolls) */
+.row-head { position: sticky; top: 0; z-index: 3; background: var(--bg-app); }
+
+/* 768–899: the grid scrolls sideways; Task sticks left, Total sticks right (with a divider) */
+@media (max-width: 899px) {
+  .grid-scroll { overflow-x: auto; padding-bottom: var(--space-8); }
+  /* An empty week has only the day header: nothing to scroll to, so no scrollbar under it */
+  .grid-scroll:not(:has(.row:not(.row-head))) { overflow-x: hidden; padding-bottom: 0; }
+  .grid { width: max-content; min-width: 100%; }
+  .row-head { position: static; } /* a sideways scroller can't also pin to the page; the header stays above the rows */
+  .row > .cell-task { position: sticky; left: 0; z-index: 2; background: var(--bg-app); }
+  .row > .cell-total { position: sticky; right: 0; z-index: 2; background: var(--bg-app); border-left: 1px solid var(--border-default); }
 }
 
 .week-header {

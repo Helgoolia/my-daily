@@ -28,7 +28,8 @@ import { FORGOTTEN_AFTER_MIN, clock } from './lib/forgotten';
 import { allTimeTotal } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
 import { addDays, formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
-import { useAppData, useNow } from './lib/useAppData';
+import { useAppData, useMedia, useNow } from './lib/useAppData';
+import { LogoMark } from './components/Logo';
 
 const LAST_SEEN_KEY = 'mydaily-last-seen';
 const KEPT_KEY = 'mydaily-kept-session';
@@ -70,7 +71,7 @@ function flash(selector: string) {
 }
 
 export default function App() {
-  const { data, update } = useAppData();
+  const { data, update, saveFailed } = useAppData();
   const [toast, setToast] = useState<ToastData | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [importing, setImporting] = useState(false);
@@ -177,7 +178,35 @@ export default function App() {
     window.addEventListener('focus', check);
     return () => { document.removeEventListener('visibilitychange', leave); window.removeEventListener('focus', check); };
   }, [data.timer]);
-  const collapsed = data.settings.sidebarCollapsed === true;
+  // Widths (Figma 5 · Narrow windows): below 1280 the sidebar collapses by itself and opens over the grid;
+  // the saved preference (sidebarCollapsed) is only for wide windows. Below 768: a stub.
+  const narrow = useMedia('(max-width: 1279px)');
+  const tooNarrow = useMedia('(max-width: 767px)');
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const collapsed = narrow ? !overlayOpen : data.settings.sidebarCollapsed === true;
+  const sidebarWrap = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (!narrow) setOverlayOpen(false); }, [narrow]);
+  // The floating sidebar closes on a click outside it and on Esc (not while a dialog or menu has it)
+  useEffect(() => {
+    if (!narrow || !overlayOpen) return;
+    const outside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (sidebarWrap.current?.contains(target) || (target as Element).closest?.('.menu, [role=dialog], [role=alertdialog], .toast')) return;
+      setOverlayOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || document.querySelector('[role=dialog], [role=alertdialog], .menu')) return;
+      setOverlayOpen(false);
+    };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', esc); };
+  }, [narrow, overlayOpen]);
+  // Storage refused a save: say it once, sticky (the app did it, not the person)
+  useEffect(() => {
+    if (saveFailed) showSticky(t(lang, 'saveFailed'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveFailed]);
   const setSettings = (patch: Partial<typeof data.settings>) => update((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
 
   // Theme: "system" follows the OS; otherwise force light/dark on <html>.
@@ -198,15 +227,27 @@ export default function App() {
     if (icon) icon.href = runningTask ? '/favicon-running.svg' : '/favicon.svg';
   }, [title, runningTask]);
 
+  // < 768: an honest stub instead of a squeezed grid; a running timer keeps counting (tab title too)
+  if (tooNarrow) {
+    return (
+      <main className="too-narrow">
+        <LogoMark />
+        <h1 className="t-body-m-medium">{t(lang, 'tooNarrowTitle')}</h1>
+        <p className="t-body-s">{t(lang, 'tooNarrowBody')}</p>
+      </main>
+    );
+  }
+
   return (
     <div className="layout">
       {/* Kept mounted so collapse/expand can animate; inert removes it from tab order while hidden */}
-      <div className={`sidebar-wrap ${collapsed ? 'is-collapsed' : ''}`} inert={collapsed}>
+      <div ref={sidebarWrap} className={`sidebar-wrap ${collapsed ? 'is-collapsed' : ''} ${narrow ? 'is-overlay' : ''}`} inert={collapsed}>
         <Sidebar
           data={data}
           now={now}
-          onCollapse={() => setSettings({ sidebarCollapsed: true })}
+          onCollapse={() => (narrow ? setOverlayOpen(false) : setSettings({ sidebarCollapsed: true }))}
           onAddToWeek={(id) => {
+            setOverlayOpen(false); // picking a task closes the floating sidebar
             update((d) => ensureInWeek(d, id, now));
             showToast(tf(lang, 'toastAdded', { name: nameOf(id) }));
             flash(`[data-row="${id}"]`);
@@ -254,7 +295,7 @@ export default function App() {
             withUndo(id, (d) => ensureInWeek(setHidden(d, id, false), id, shownMonday), msg('toastAdded', nameOf(id)));
             flash(`[data-row="${id}"], [data-task="${id}"]`);
           }}
-          onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
+          onExpandSidebar={collapsed ? () => (narrow ? setOverlayOpen(true) : setSettings({ sidebarCollapsed: false })) : undefined}
           onRename={onRename}
           nameError={nameError}
           onRemoveFromWeek={onRemoveFromWeek}

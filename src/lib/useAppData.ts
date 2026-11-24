@@ -27,12 +27,27 @@ export function useAppData() {
   const [data, setData] = useState<AppData>(initial.data);
   const update = useCallback((fn: (d: AppData) => AppData) => setData((d) => fn(d)), []);
 
+  // A full or blocked localStorage: the app keeps working in memory and says so (App shows a sticky toast)
+  const [saveFailed, setSaveFailed] = useState(false);
   useEffect(() => {
-    // TODO(toasts PR): show an error toast when save() returns false (full or blocked storage).
-    if (!isDemo) save(data);
+    // syncing with an external system (localStorage) is what effects are for
+    // eslint-disable-next-line react/set-state-in-effect
+    if (!isDemo) setSaveFailed(!save(data));
   }, [data, isDemo]);
 
-  return { data, update, isDemo };
+  return { data, update, isDemo, saveFailed };
+}
+
+/** Live media query, e.g. useMedia('(max-width: 1279px)') */
+export function useMedia(query: string) {
+  const [match, setMatch] = useState(() => matchMedia(query).matches);
+  useEffect(() => {
+    const m = matchMedia(query);
+    const on = () => setMatch(m.matches);
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, [query]);
+  return match;
 }
 
 /** Current time, re-rendered every `ms` (1 s while a timer runs, 1 min otherwise). */
