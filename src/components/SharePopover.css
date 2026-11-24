@@ -31,7 +31,7 @@
 .setting-hint { color: var(--text-secondary); }
 /* Footer: side by side (secondary left, primary right, equal width) while labels fit; else they stack */
 .popover-actions { display: flex; flex-wrap: wrap; gap: var(--space-8); }
-.popover-actions .button { flex: 1 1 auto; justify-content: center; }
+.popover-actions .button { flex: 1 1 auto; justify-content: center; gap: var(--space-8); } /* Button M, like the dialogs */
 /* Button S: 28 high, padding 8, radius 8 */
 .button.is-small { gap: var(--space-4); height: 28px; padding: 0 var(--space-8); border-radius: var(--radius-8); }
 

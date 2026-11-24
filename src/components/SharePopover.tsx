@@ -148,7 +148,7 @@ export function SharePopover({ data, monday, now, lang, compact, disabled, onDow
             </div>
             <p className="t-body-s setting-hint">{t(lang, 'snapshotNote')}</p>
             <div className="popover-actions">
-              <button type="button" className="button button-secondary is-small t-body-s-medium" onClick={() => void download()}>
+              <button type="button" className="button button-secondary t-body-m-medium" onClick={() => void download()}>
                 <IconDownload size={16} aria-hidden /> {t(lang, 'downloadPng')}
               </button>
             </div>
