@@ -24,7 +24,7 @@ body {
 /* Button labels aren't text to select: a long press on a touch screen shouldn't highlight them */
 button { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-.layout { display: flex; min-height: 100%; }
+.layout { display: flex; height: 100%; overflow: hidden; }
 /* < 768 (Figma: Too narrow · 600): logo mark, one line, one hint — centred */
 .too-narrow { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-8); min-height: 100%; padding: var(--space-24); text-align: center; }
 .too-narrow svg { margin-bottom: var(--space-16); }
@@ -33,6 +33,11 @@ button { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-col
 .app {
   flex: 1;
   min-width: 0;
+  /* The week scrolls inside its own area, not the page: the sidebar then never moves while you scroll.
+     (A sticky sidebar on a scrolling page is re-placed on every scroll step, and at 125 %/150 % screen
+     scaling its icons and labels jitter by a pixel against their backgrounds.) */
+  height: 100%;
+  overflow-y: auto;
   padding: var(--space-16);
 }
 
