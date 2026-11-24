@@ -12,6 +12,8 @@
 /* 768–899: the grid scrolls sideways; Task sticks left, Total sticks right (with a divider) */
 @media (max-width: 899px) {
   .grid-scroll { overflow-x: auto; padding-bottom: var(--space-8); }
+  /* An empty week has only the day header: nothing to scroll to, so no scrollbar under it */
+  .grid-scroll:not(:has(.row:not(.row-head))) { overflow-x: hidden; padding-bottom: 0; }
   .grid { width: max-content; min-width: 100%; }
   .row-head { position: static; } /* a sideways scroller can't also pin to the page; the header stays above the rows */
   .row > .cell-task { position: sticky; left: 0; z-index: 2; background: var(--bg-app); }
