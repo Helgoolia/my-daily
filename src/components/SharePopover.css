@@ -29,9 +29,9 @@
 /* Setting Row: label + hint, Switch on the right */
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); padding: var(--space-8) 0; }
 .setting-hint { color: var(--text-secondary); }
-/* Footer: side by side (secondary left, primary right, equal width) while labels fit; else they stack */
-.popover-actions { display: flex; flex-wrap: wrap; gap: var(--space-8); }
-.popover-actions .button { flex: 1 1 auto; justify-content: center; gap: var(--space-8); } /* Button M, like the dialogs */
+/* Footer: always stacked, full width, same in both languages (secondary on top, primary below) */
+.popover-actions { display: flex; flex-direction: column; gap: var(--space-8); }
+.popover-actions .button { width: 100%; justify-content: center; gap: var(--space-8); } /* Button M, like the dialogs */
 /* Button S: 28 high, padding 8, radius 8 */
 .button.is-small { gap: var(--space-4); height: 28px; padding: 0 var(--space-8); border-radius: var(--radius-8); }
 

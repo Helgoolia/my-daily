@@ -1,9 +1,9 @@
-import { IconDownload, IconShare } from '@tabler/icons-react';
+import { IconDownload, IconLink, IconShare } from '@tabler/icons-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { AppData } from '../data/types';
 import { t, tf, type Lang } from '../lib/i18n';
-import { buildSnapshot, type Snapshot } from '../lib/snapshot';
+import { buildSnapshot, encodeSnapshot, shareUrl, type Snapshot } from '../lib/snapshot';
 import { drawWeek, imageFileName } from '../lib/weekImage';
 import { Switch } from './Switch';
 import { Tooltip } from './Tooltip';
@@ -18,6 +18,7 @@ type Props = {
   compact: boolean;
   disabled: boolean;
   onDownloaded: (fileName: string) => void;
+  onLinkCopied: (url: string) => void;
 };
 
 /**
@@ -25,7 +26,7 @@ type Props = {
  * aligned, kept 8 px inside the window) with a preview that is the PNG itself, "Include task names",
  * the snapshot note and Download PNG. Closes on click outside or Esc.
  */
-export function SharePopover({ data, monday, now, lang, compact, disabled, onDownloaded }: Props) {
+export function SharePopover({ data, monday, now, lang, compact, disabled, onDownloaded, onLinkCopied }: Props) {
   const [open, setOpen] = useState(false);
   const [names, setNames] = useState(true);
   const [snap, setSnap] = useState<Snapshot | null>(null);
@@ -102,6 +103,14 @@ export function SharePopover({ data, monday, now, lang, compact, disabled, onDow
     }, 'image/png');
   };
 
+  const copy = async () => {
+    if (!snap) return;
+    const url = shareUrl(await encodeSnapshot(snap));
+    try { await navigator.clipboard.writeText(url); } catch { window.prompt(t(lang, 'copyLink'), url); }
+    setOpen(false);
+    onLinkCopied(url);
+  };
+
   const trigger = (
     <button
       ref={button}
@@ -150,6 +159,9 @@ export function SharePopover({ data, monday, now, lang, compact, disabled, onDow
             <div className="popover-actions">
               <button type="button" className="button button-secondary t-body-m-medium" onClick={() => void download()}>
                 <IconDownload size={16} aria-hidden /> {t(lang, 'downloadPng')}
+              </button>
+              <button type="button" className="button button-primary t-body-m-medium" onClick={() => void copy()}>
+                <IconLink size={16} aria-hidden /> {t(lang, 'copyLink')}
               </button>
             </div>
           </div>,

@@ -39,13 +39,14 @@ type Props = {
   onThisWeek: () => void;
   /** PNG saved from Share */
   onShareDownloaded: (fileName: string) => void;
+  onShareLinkCopied: (url: string) => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek, onShareDownloaded }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek, onShareDownloaded, onShareLinkCopied }: Props) {
   const compact = useMedia('(max-width: 899px)');
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -149,7 +150,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             {t(lang, 'includingActiveTimer')}
           </span>
         </div>
-        <SharePopover data={data} monday={monday} now={now} lang={lang} compact={compact} disabled={tasks.length === 0} onDownloaded={onShareDownloaded} />
+        <SharePopover data={data} monday={monday} now={now} lang={lang} compact={compact} disabled={tasks.length === 0} onDownloaded={onShareDownloaded} onLinkCopied={onShareLinkCopied} />
         </div>
       </header>
 

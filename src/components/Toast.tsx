@@ -8,6 +8,9 @@ export type ToastData = {
   message: string;
   undoLabel?: string;
   onUndo?: () => void;
+  /** Another action instead of Undo (e.g. "Open" a copied link) — not bound to Ctrl/Cmd+Z */
+  actionLabel?: string;
+  onAction?: () => void;
   /** No timer, × to close — for something the app did by itself (e.g. stopped the timer) */
   sticky?: boolean;
   closeLabel?: string;
@@ -82,6 +85,18 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
               }}
             >
               {toast.undoLabel}
+            </button>
+          )}
+          {toast.onAction && (
+            <button
+              type="button"
+              className="secondary-button t-body-s-medium"
+              onClick={() => {
+                toast.onAction?.();
+                onClose();
+              }}
+            >
+              {toast.actionLabel}
             </button>
           )}
           {toast.sticky && (
