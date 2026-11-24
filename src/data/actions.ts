@@ -1,4 +1,4 @@
-import { mondayOf, toISODate } from '../lib/time';
+import { addDays, mondayOf, toISODate } from '../lib/time';
 import type { AppData, Entry, Task } from './types';
 
 /** Pure functions: take data, return new data. The UI saves whatever comes back. */
@@ -48,6 +48,23 @@ export function weekRows(data: AppData, day: Date): string[] {
 /** Is the running timer counting in the week of `day`? (A session belongs to the day it started.) */
 export const timerInWeek = (data: AppData, taskId: string, day: Date) =>
   data.timer?.taskId === taskId && toISODate(mondayOf(new Date(data.timer.startedAt))) === toISODate(mondayOf(day));
+
+/**
+ * New week (Figma Flow 12): the first time a week opens, its rows are last week's tasks that had time
+ * (or a running timer) — not hidden ones; hours start at zero. Tasks with no time last week "sleep"
+ * and come back from the sidebar or suggestions. Runs once per week: a week with stored rows is left alone.
+ */
+export function startWeek(data: AppData, day: Date): AppData {
+  const key = toISODate(mondayOf(day));
+  if (data.weeks[key]) return data;
+  const prev = addDays(mondayOf(day), -7);
+  const prevDates = new Set(weekDates(prev));
+  const hadTime = new Set(data.entries.filter((e) => prevDates.has(e.date) && e.minutes > 0).map((e) => e.taskId));
+  if (data.timer && toISODate(new Date(data.timer.startedAt)) < key) hadTime.add(data.timer.taskId);
+  const hidden = new Set(data.tasks.filter((t) => t.hidden).map((t) => t.id));
+  const rows = weekRows(data, prev).filter((id) => hadTime.has(id) && !hidden.has(id));
+  return { ...data, weeks: { ...data.weeks, [key]: rows } };
+}
 
 /** Adds a task to the week of `day` (rows keep their order; new ones go to the end). */
 export function ensureInWeek(data: AppData, taskId: string, day = new Date()): AppData {

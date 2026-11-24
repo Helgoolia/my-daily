@@ -7,6 +7,7 @@ import {
   addTaskToWeek,
   deleteTask,
   ensureInWeek,
+  startWeek,
   timerInWeek,
   hideTask,
   removeFromWeek,
@@ -116,6 +117,12 @@ export default function App() {
   const thisMonday = mondayOf(now);
   const shownMonday = viewWeek && viewWeek < toISODate(thisMonday) ? fromISODate(viewWeek) : thisMonday;
   const isCurrent = toISODate(shownMonday) === toISODate(thisMonday);
+  // New week (Flow 12): on the first visit of a week, last week's tasks with time become its rows
+  const thisKey = toISODate(thisMonday);
+  const weekStarted = data.weeks[thisKey] !== undefined;
+  useEffect(() => {
+    if (!weekStarted) update((d) => startWeek(d, fromISODate(thisKey)));
+  }, [thisKey, weekStarted, update]);
   const goToWeek = (monday: Date) => setViewWeek(toISODate(monday) < toISODate(thisMonday) ? toISODate(monday) : null);
   // "this week" in messages becomes the dates of the week on screen
   const weekLabel = weekRange(lang, shownMonday, addDays(shownMonday, 6), now);
