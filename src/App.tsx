@@ -23,10 +23,23 @@ import type { AppData } from './data/types';
 import { plural, t, tf, weekRange, weekdayShort } from './lib/i18n';
 import { applyImport, undoImport } from './lib/importCsv';
 import { ImportDialog } from './components/ImportDialog';
+import { ForgottenTimer } from './components/ForgottenTimer';
+import { FORGOTTEN_AFTER_MIN, clock } from './lib/forgotten';
 import { allTimeTotal } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
 import { addDays, formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
+
+const LAST_SEEN_KEY = 'mydaily-last-seen';
+const KEPT_KEY = 'mydaily-kept-session';
+function readLastSeen(): Date | null {
+  try {
+    const v = localStorage.getItem(LAST_SEEN_KEY);
+    return v ? new Date(v) : null;
+  } catch { return null; }
+}
+const keptSession = () => { try { return sessionStorage.getItem(KEPT_KEY); } catch { return null; } };
+const keepSession = (startedAt: string) => { try { sessionStorage.setItem(KEPT_KEY, startedAt); } catch { /* ignore */ } };
 
 type Confirm = { kind: 'remove' | 'delete'; taskId: string; day: Date };
 
@@ -142,6 +155,28 @@ export default function App() {
     showSticky(t(lang, 'toastDayFull'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
+  // Forgotten timer (Flow 7): 4+ hours running → ask when the person comes back to the tab (or opens
+  // the app). Not while they are here and working. "Keep all" isn't asked again for that session.
+  const [forgotten, setForgotten] = useState(false);
+  const lastSeen = useRef<Date | null>(readLastSeen());
+  useEffect(() => {
+    const check = () => {
+      const timer = data.timer;
+      if (!timer || document.visibilityState !== 'visible') return;
+      const minutes = (Date.now() - new Date(timer.startedAt).getTime()) / 60_000;
+      if (minutes >= FORGOTTEN_AFTER_MIN && keptSession() !== timer.startedAt) setForgotten(true);
+    };
+    const leave = () => {
+      if (document.visibilityState === 'hidden') {
+        lastSeen.current = new Date();
+        try { localStorage.setItem(LAST_SEEN_KEY, lastSeen.current.toISOString()); } catch { /* storage off: in memory only */ }
+      } else check();
+    };
+    check();
+    document.addEventListener('visibilitychange', leave);
+    window.addEventListener('focus', check);
+    return () => { document.removeEventListener('visibilitychange', leave); window.removeEventListener('focus', check); };
+  }, [data.timer]);
   const collapsed = data.settings.sidebarCollapsed === true;
   const setSettings = (patch: Partial<typeof data.settings>) => update((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
 
@@ -286,6 +321,30 @@ export default function App() {
             const n = data.lastImport?.entryIds.length ?? 0;
             update((d) => undoImport(d));
             showToast(tf(lang, 'toastImportUndone', { entries: plural(lang, n, 'entry') }), () => update((d) => ({ ...before, settings: d.settings })));
+          }}
+        />
+      )}
+      {forgotten && data.timer && (
+        <ForgottenTimer
+          lang={lang}
+          taskName={nameOf(data.timer.taskId)}
+          startedAt={new Date(data.timer.startedAt)}
+          now={now}
+          lastSeen={lastSeen.current}
+          onKeep={() => {
+            keepSession(data.timer!.startedAt);
+            setForgotten(false);
+          }}
+          onStopAt={(at) => {
+            setForgotten(false);
+            keepSession(data.timer!.startedAt); // Undo brings the timer back without asking again
+            withUndo(data.timer!.taskId, (d) => stopTimer(d, at), tf(lang, 'toastStoppedAt', { time: clock(at) }));
+          }}
+          onDiscard={() => {
+            setForgotten(false);
+            keepSession(data.timer!.startedAt);
+            const id = data.timer!.taskId;
+            withUndo(id, (d) => ({ ...d, timer: null }), tf(lang, 'toastDiscarded', { name: nameOf(id) }));
           }}
         />
       )}

@@ -11,7 +11,17 @@ export function useAppData() {
     // in development the sample appears only while nothing is saved yet.
     const forced = new URLSearchParams(location.search).has('demo');
     const devEmpty = import.meta.env.DEV && data.tasks.length === 0;
-    return forced || devEmpty ? { data: demoData(), isDemo: true } : { data, isDemo: false };
+    if (!(forced || devEmpty)) return { data, isDemo: false };
+    const demo = demoData();
+    // ?demo&forgot: a timer left running 9 h — opens the Forgotten timer dialog (Flow 7) for review
+    const params = new URLSearchParams(location.search);
+    // Review links: &theme=light|dark and &lang=uk|en set the sample's look (never saved)
+    const theme = params.get('theme');
+    if (theme === 'light' || theme === 'dark') demo.settings.theme = theme;
+    const lang = params.get('lang');
+    if (lang === 'uk' || lang === 'ua' || lang === 'en') demo.settings.language = lang === 'en' ? 'en' : 'uk';
+    if (params.has('forgot')) demo.timer = { taskId: demo.tasks[0].id, startedAt: new Date(Date.now() - (9 * 60 + 12) * 60_000).toISOString() };
+    return { data: demo, isDemo: true };
   });
   const isDemo = initial.isDemo;
   const [data, setData] = useState<AppData>(initial.data);

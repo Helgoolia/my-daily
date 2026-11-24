@@ -1,0 +1,56 @@
+/* Input · Picker, Size M (Figma): 40 high, radius 10, bg/control + border/default; clock and chevron
+   in text/secondary; focus = ring; error = red border only */
+.picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 40px;
+  padding: 0 var(--space-4) 0 var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-10);
+  background: var(--bg-control);
+}
+.picker:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.picker:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.picker.has-error, .picker.has-error:focus-within { border-color: var(--border-error); outline: none; }
+.picker-icon { flex: none; color: var(--text-secondary); }
+.picker-input {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--text-primary);
+  line-height: 20px;
+}
+.picker-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-8);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.picker-toggle:hover { background: var(--state-hover); color: var(--text-primary); }
+/* List under the field: 8 px (the field keeps its focus ring), full width, 6 rows then scroll */
+.menu.picker-list {
+  top: calc(100% + var(--space-8));
+  right: 0;
+  width: auto;
+  max-height: calc(6 * 36px + 2 * var(--space-4));
+  overflow-y: auto;
+  z-index: 70;
+}
+.picker-list .menu-item { cursor: pointer; }
+/* The global 4 px scrollbar sits right at the edge, so rows keep 4 px to it, like the left padding;
+   its track stops short of the rounded corners */
+.picker-list::-webkit-scrollbar-track { margin: var(--space-8) 0; }
+.picker-hint { margin: 0; min-height: 20px; color: var(--text-secondary); } /* reserved: the dialog never changes height */
+.picker-hint.is-error { color: var(--text-error); }

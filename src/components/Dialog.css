@@ -15,6 +15,7 @@
   background: var(--bg-elevated);
   box-shadow: var(--shadow-dialog);
 }
+.dialog:focus { outline: none; }
 .dialog-title { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dialog-body { margin: var(--space-8) 0 0; color: var(--text-secondary); overflow-wrap: anywhere; }
 .dialog-body strong { font-weight: 500; color: var(--text-primary); }
@@ -28,6 +29,7 @@
   padding: 0 var(--space-12);
   border: 1px solid transparent;
   border-radius: var(--radius-10);
+  white-space: nowrap; /* a button label never breaks into two lines */
   cursor: pointer;
 }
 .button-secondary { border-color: var(--border-default); background: var(--bg-control); color: var(--text-primary); }

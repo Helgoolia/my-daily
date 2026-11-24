@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './Dialog.css';
 
-const FOCUSABLE = 'button:not(:disabled), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Dialog shell — Figma: Dialog (title, body, slot, actions). Scrim, Esc / scrim click = cancel,
@@ -28,7 +28,9 @@ export function Dialog({
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const back = document.activeElement as HTMLElement | null;
-    const first = (initialFocus && box.current?.querySelector<HTMLElement>(initialFocus)) || box.current?.querySelector<HTMLElement>(FOCUSABLE);
+    // "dialog": focus the dialog itself — no ring on a button the person didn't reach (a dialog the app
+    // opened by itself); Tab then goes to the first button, Esc still cancels
+    const first = initialFocus === 'dialog' ? box.current : (initialFocus && box.current?.querySelector<HTMLElement>(initialFocus)) || box.current?.querySelector<HTMLElement>(FOCUSABLE);
     first?.focus();
     return () => back?.focus?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,7 +46,7 @@ export function Dialog({
   };
   return createPortal(
     <div className="scrim" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
-      <div ref={box} className="dialog" style={{ width }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" onKeyDown={onKey}>
+      <div ref={box} className="dialog" tabIndex={-1} style={{ width }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" onKeyDown={onKey}>
         <h2 id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
         {description && <p className="t-body-m dialog-body">{description}</p>}
         {children && <div className="dialog-slot">{children}</div>}
