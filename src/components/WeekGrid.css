@@ -39,7 +39,8 @@
 .cell-task .task-name { flex: 1; min-width: 0; }
 /* ••• : space always reserved (visibility, not display) so the name never reflows */
 .row .row-more { visibility: hidden; flex: none; }
-.row:hover .row-more, .row:focus-within .row-more, .cell-task.is-menu-open .row-more { visibility: visible; }
+/* :has(:focus-visible), not :focus-within — a mouse click on a cell must not leave the row looking hovered */
+.row:hover .row-more, .row:has(:focus-visible) .row-more, .cell-task.is-menu-open .row-more { visibility: visible; }
 
 /* Rename (Input Text S): 32 high, bg/control, radius 10, focus ring; error = red border */
 .rename-input {
