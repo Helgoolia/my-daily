@@ -1,0 +1,41 @@
+/* Popover (Figma): Menu's surface — bg/elevated, border, radius 12, Popover shadow; 320 wide, padding 16, gap 16 */
+.popover {
+  position: fixed;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-12);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-popover);
+}
+.popover-title { margin: 0 0 var(--space-4); color: var(--text-primary); }
+.popover p { margin: 0; }
+/* The preview is the PNG itself, so it shows exactly what will be saved */
+.share-preview {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-8);
+  background: var(--bg-app);
+  aspect-ratio: 286 / 185;
+}
+.share-preview:has(img) { aspect-ratio: auto; }
+.share-preview img { display: block; width: 100%; height: auto; }
+/* Setting Row: label + hint, Switch on the right */
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); padding: var(--space-8) 0; }
+.setting-hint { color: var(--text-secondary); }
+/* Footer: side by side (secondary left, primary right, equal width) while labels fit; else they stack */
+.popover-actions { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.popover-actions .button { flex: 1 1 auto; justify-content: center; }
+/* Button S: 28 high, padding 8, radius 8 */
+.button.is-small { gap: var(--space-4); height: 28px; padding: 0 var(--space-8); border-radius: var(--radius-8); }
+
+/* Share in the week header — Button Secondary M; icon-only below 900 px */
+.share-button { gap: var(--space-8); }
+.share-button.is-icon { width: 32px; padding: 0; justify-content: center; }
+.share-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }

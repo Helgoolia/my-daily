@@ -1,0 +1,28 @@
+/* Switch 32×18 (Figma _Base/Switch): knob 12, padding 2 inside a 1 px border; focus ring radius 9 + 4 */
+.switch {
+  flex: none;
+  position: relative;
+  width: 32px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--bg-control);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.switch:hover { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.switch:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+.switch.is-on { border-color: transparent; background-color: var(--bg-accent); }
+.switch.is-on .switch-knob { transform: translateX(14px); background: var(--text-on-accent); }
+@media (prefers-reduced-motion: reduce) { .switch, .switch-knob { transition: none; } }

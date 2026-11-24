@@ -279,6 +279,7 @@ export default function App() {
           onPrevWeek={() => goToWeek(addDays(shownMonday, -7))}
           onNextWeek={() => goToWeek(addDays(shownMonday, 7))}
           onThisWeek={() => setViewWeek(null)}
+          onShareDownloaded={(file) => showToast(tf(lang, 'toastImageDownloaded', { file }))}
           onStart={(id) => update((d) => startTimer(d, id))}
           onStop={() => update((d) => stopTimer(d))}
           onAddTask={(name) => {

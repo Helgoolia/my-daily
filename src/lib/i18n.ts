@@ -94,6 +94,17 @@ const strings = {
     toastCleared: 'Time deleted: {name} · {day}',
     toastDayFull: 'Timer stopped: this day already has 24:00',
     tooNarrowTitle: 'Make the window wider',
+    share: 'Share',
+    shareTitle: 'Share this week',
+    includeNames: 'Include task names',
+    includeNamesOn: 'Turn off to hide them',
+    includeNamesOff: 'Rows show as Task 1, Task 2…',
+    snapshotNote: 'Snapshot as of today — later changes won’t appear in it.',
+    downloadPng: 'Download PNG',
+    copyLink: 'Copy link',
+    taskN: 'Task {n}',
+    toastImageDownloaded: 'Image downloaded · {file}',
+    shareEmpty: 'Nothing to share yet',
     tooNarrowBody: 'My Daily works in windows 768 px and wider for now.',
     saveFailed: 'Changes aren’t being saved: browser storage is full or blocked. Export a backup from ⛁.',
     forgotTitle: 'Timer has been running for {time}',
@@ -227,6 +238,17 @@ const strings = {
     toastCleared: 'Час видалено: {name} · {day}',
     toastDayFull: 'Таймер зупинено: у цьому дні вже 24:00',
     tooNarrowTitle: 'Розширте вікно',
+    share: 'Поділитися',
+    shareTitle: 'Поділитися тижнем',
+    includeNames: 'Показувати назви задач',
+    includeNamesOn: 'Вимкніть, щоб приховати',
+    includeNamesOff: 'Рядки підписані як Задача 1, Задача 2…',
+    snapshotNote: 'Знімок станом на сьогодні: пізніші зміни в нього не потраплять.',
+    downloadPng: 'Завантажити PNG',
+    copyLink: 'Копіювати посилання',
+    taskN: 'Задача {n}',
+    toastImageDownloaded: 'Зображення завантажено · {file}',
+    shareEmpty: 'Поки нема чим ділитися',
     tooNarrowBody: 'My Daily поки працює у вікнах від 768 px.',
     saveFailed: 'Зміни не зберігаються: сховище браузера заповнене або заблоковане. Збережіть копію через ⛁.',
     forgotTitle: 'Таймер працює вже {time}',
@@ -295,13 +317,14 @@ export const weekdayShort = (lang: Lang, d: Date) =>
  * "9–15 November" / "9–15 листопада". The year is added only when the week is not in the
  * current year (rule from the plan); a week across two years shows both.
  */
-export function weekRange(lang: Lang, monday: Date, sunday: Date, now = new Date()): string {
+export function weekRange(lang: Lang, monday: Date, sunday: Date, now = new Date(), alwaysYear = false): string {
   const fmt = (d: Date, withYear: boolean) =>
     new Intl.DateTimeFormat(locale(lang), { day: 'numeric', month: 'long', ...(withYear && { year: 'numeric' }) })
       .format(d)
       .replace(' р.', '');
   const crossYear = monday.getFullYear() !== sunday.getFullYear();
-  const showYear = crossYear || sunday.getFullYear() !== now.getFullYear();
+  // No year for the current year — except a shared PNG / link, which always shows it (CLAUDE.md)
+  const showYear = alwaysYear || crossYear || sunday.getFullYear() !== now.getFullYear();
   if (crossYear) return `${fmt(monday, true)} – ${fmt(sunday, true)}`;
   if (monday.getMonth() !== sunday.getMonth()) return `${fmt(monday, false)} – ${fmt(sunday, showYear)}`;
   return `${monday.getDate()}–${fmt(sunday, showYear)}`;
