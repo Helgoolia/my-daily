@@ -15,6 +15,7 @@
   background: var(--bg-elevated);
   box-shadow: var(--shadow-dialog);
 }
+.dialog:focus { outline: none; }
 .dialog-title { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dialog-body { margin: var(--space-8) 0 0; color: var(--text-secondary); overflow-wrap: anywhere; }
 .dialog-body strong { font-weight: 500; color: var(--text-primary); }

@@ -17,13 +17,16 @@ type Props = {
   onDiscard: () => void;
 };
 
-/** Sentence with facts in bold (task name, clock times): "**My Daily** started today at **09:48**." */
+/**
+ * Sentence with facts in bold (task name, clock times), punctuation right after a fact bold too, as in
+ * Figma: "**My Daily** started today at **09:48.**"
+ */
 function bold(text: string, facts: Record<string, string>): ReactNode {
-  return text.split(/(\{\w+\}|\n)/).map((part, i) => {
+  return text.split(/(\{\w+\}[.,:]?|\n)/).map((part, i) => {
     if (part === '\n') return <br key={i} />;
-    const key = part.match(/^\{(\w+)\}$/)?.[1];
-    if (!key || !(key in facts)) return part;
-    return key === 'when' ? facts[key] : <strong key={i}>{facts[key]}</strong>;
+    const m = part.match(/^\{(\w+)\}([.,:]?)$/);
+    if (!m || !(m[1] in facts)) return part;
+    return m[1] === 'when' ? facts[m[1]] + m[2] : <strong key={i}>{facts[m[1]]}{m[2]}</strong>;
   });
 }
 
@@ -36,6 +39,8 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
   const [step, setStep] = useState<'ask' | 'pick'>('ask');
   const [value, setValue] = useState(() => clock(suggestStop(startedAt, now, lastSeen)));
   const [tried, setTried] = useState(false);
+  // While a time is half-typed the hint keeps the last valid session, so the dialog doesn't jump
+  const [lastValid, setLastValid] = useState<Date | null>(null);
 
   const day = dayWord(startedAt, now);
   const when =
@@ -52,7 +57,7 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
         title={tf(lang, 'forgotTitle', { time: running })}
         description={bold(t(lang, 'forgotBody'), facts)}
         onCancel={onKeep}
-        initialFocus=".button-primary"
+        initialFocus="dialog"
         actions={
           <>
             <button type="button" className="button button-secondary t-body-m-medium" onClick={onKeep}>{t(lang, 'keepAll')}</button>
@@ -64,6 +69,8 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
   }
 
   const stopAt = resolveStop(value, startedAt, now);
+  if (stopAt && stopAt.getTime() !== lastValid?.getTime()) setLastValid(stopAt);
+  const hintAt = stopAt ?? lastValid;
   const showError = tried && !stopAt;
   const submit = () => (stopAt ? onStopAt(stopAt) : setTried(true));
   return (
@@ -96,8 +103,8 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
       <p id="stop-at-hint" className={`t-body-s picker-hint ${showError ? 'is-error' : ''}`} aria-live="polite">
         {showError
           ? tf(lang, 'stopAtError', { from: clock(startedAt), to: clock(now) })
-          : stopAt
-            ? tf(lang, 'sessionHint', { time: formatMinutes((stopAt.getTime() - startedAt.getTime()) / 60_000), from: clock(startedAt), to: clock(stopAt) })
+          : hintAt
+            ? tf(lang, 'sessionHint', { time: formatMinutes((hintAt.getTime() - startedAt.getTime()) / 60_000), from: clock(startedAt), to: clock(hintAt) })
             : ' '}
       </p>
     </Dialog>

@@ -49,5 +49,5 @@
   z-index: 70;
 }
 .picker-list .menu-item { cursor: pointer; }
-.picker-hint { margin: 0; color: var(--text-secondary); }
+.picker-hint { margin: 0; min-height: 20px; color: var(--text-secondary); } /* reserved: the dialog never changes height */
 .picker-hint.is-error { color: var(--text-error); }
