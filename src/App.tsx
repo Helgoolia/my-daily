@@ -337,10 +337,12 @@ export default function App() {
           }}
           onStopAt={(at) => {
             setForgotten(false);
+            keepSession(data.timer!.startedAt); // Undo brings the timer back without asking again
             withUndo(data.timer!.taskId, (d) => stopTimer(d, at), tf(lang, 'toastStoppedAt', { time: clock(at) }));
           }}
           onDiscard={() => {
             setForgotten(false);
+            keepSession(data.timer!.startedAt);
             const id = data.timer!.taskId;
             withUndo(id, (d) => ({ ...d, timer: null }), tf(lang, 'toastDiscarded', { name: nameOf(id) }));
           }}

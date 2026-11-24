@@ -29,6 +29,7 @@
   padding: 0 var(--space-12);
   border: 1px solid transparent;
   border-radius: var(--radius-10);
+  white-space: nowrap; /* a button label never breaks into two lines */
   cursor: pointer;
 }
 .button-secondary { border-color: var(--border-default); background: var(--bg-control); color: var(--text-primary); }
