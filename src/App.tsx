@@ -17,7 +17,9 @@ import {
   weekMinutes,
 } from './data/actions';
 import type { AppData } from './data/types';
-import { t, tf, weekdayShort } from './lib/i18n';
+import { plural, t, tf, weekdayShort } from './lib/i18n';
+import { applyImport, undoImport } from './lib/importCsv';
+import { ImportDialog } from './components/ImportDialog';
 import { allTimeTotal } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
 import { formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
@@ -55,6 +57,8 @@ export default function App() {
   const { data, update } = useAppData();
   const [toast, setToast] = useState<ToastData | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [undoImportOpen, setUndoImportOpen] = useState(false);
   const toastId = useRef(0);
   const lang = data.settings.language;
   const nameOf = (id: string) => data.tasks.find((x) => x.id === id)?.name ?? '';
@@ -158,6 +162,8 @@ export default function App() {
           }}
           onHide={(id) => withUndo(id, (d) => hideTask(d, id, now), tf(lang, 'toastHidden', { name: nameOf(id) }))}
           onDelete={onDelete}
+          onImport={() => setImporting(true)}
+          onUndoImport={() => setUndoImportOpen(true)}
           onExport={() => {
             const file = exportFileName(now);
             download(file, exportCsv(data, now));
@@ -225,6 +231,38 @@ export default function App() {
         />
         );
       })()}
+      {importing && (
+        <ImportDialog
+          lang={lang}
+          data={data}
+          now={now}
+          onCancel={() => setImporting(false)}
+          onImport={(analysis, fileName) => {
+            setImporting(false);
+            const before = data;
+            update((d) => applyImport(d, analysis, fileName, now));
+            showToast(tf(lang, 'toastImported', { entries: plural(lang, analysis.rows.length, 'entry'), weeks: plural(lang, analysis.weeks, 'week') }), () =>
+              update((d) => ({ ...before, settings: d.settings })),
+            );
+          }}
+        />
+      )}
+      {undoImportOpen && data.lastImport && (
+        <ConfirmDialog
+          title={t(lang, 'undoImportTitle')}
+          body={tf(lang, 'undoImportBody', { entries: plural(lang, data.lastImport.entryIds.length, 'entry'), file: data.lastImport.fileName ?? 'CSV' })}
+          confirmLabel={t(lang, 'removeEntries')}
+          cancelLabel={t(lang, 'cancel')}
+          onCancel={() => setUndoImportOpen(false)}
+          onConfirm={() => {
+            setUndoImportOpen(false);
+            const before = data;
+            const n = data.lastImport?.entryIds.length ?? 0;
+            update((d) => undoImport(d));
+            showToast(tf(lang, 'toastImportUndone', { entries: plural(lang, n, 'entry') }), () => update((d) => ({ ...before, settings: d.settings })));
+          }}
+        />
+      )}
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );

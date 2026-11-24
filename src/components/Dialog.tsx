@@ -2,6 +2,59 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './Dialog.css';
 
+const FOCUSABLE = 'button:not(:disabled), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Dialog shell — Figma: Dialog (title, body, slot, actions). Scrim, Esc / scrim click = cancel,
+ * focus trapped inside and returned to where it was. `initialFocus` = CSS selector inside the dialog.
+ */
+export function Dialog({
+  title,
+  description,
+  children,
+  actions,
+  width = 400,
+  initialFocus,
+  onCancel,
+}: {
+  title: string;
+  description?: ReactNode;
+  children?: ReactNode;
+  actions: ReactNode;
+  width?: number;
+  initialFocus?: string;
+  onCancel: () => void;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const back = document.activeElement as HTMLElement | null;
+    const first = (initialFocus && box.current?.querySelector<HTMLElement>(initialFocus)) || box.current?.querySelector<HTMLElement>(FOCUSABLE);
+    first?.focus();
+    return () => back?.focus?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
+    if (e.key === 'Tab') {
+      const f = [...(box.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      e.preventDefault();
+      f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length]?.focus();
+    }
+  };
+  return createPortal(
+    <div className="scrim" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
+      <div ref={box} className="dialog" style={{ width }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" onKeyDown={onKey}>
+        <h2 id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
+        {description && <p className="t-body-m dialog-body">{description}</p>}
+        {children && <div className="dialog-slot">{children}</div>}
+        <div className="dialog-actions">{actions}</div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 /**
  * Confirm dialog — Figma: Dialog (400 wide, centred, scrim). Title = short question, body names the
  * task and what is lost, Confirm repeats the verb. Destructive: Cancel gets the initial focus.

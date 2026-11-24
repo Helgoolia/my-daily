@@ -1,4 +1,5 @@
 import {
+  IconArrowBackUp,
   IconArrowBarLeft,
   IconArrowsUpDown,
   IconCalendarPlus,
@@ -6,6 +7,7 @@ import {
   IconChevronDown,
   IconDatabase,
   IconDatabaseExport,
+  IconDatabaseImport,
   IconEye,
   IconEyeOff,
   IconMoon,
@@ -37,12 +39,14 @@ type Props = {
   onHide: (taskId: string) => void;
   onDelete: (taskId: string) => void;
   onExport: () => void;
+  onImport: () => void;
+  onUndoImport: () => void;
 };
 
 const SORTS: Settings['sort'][] = ['most-tracked', 'recent', 'name'];
 
 /** Sidebar — Figma: Components / Sidebar (280, padding 24/16/16/16, gap 24). */
-export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete, onExport }: Props) {
+export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete, onExport, onImport, onUndoImport }: Props) {
   const lang = data.settings.language;
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -213,7 +217,10 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
           align="end"
           width={240}
           entries={[
+            { kind: 'item', label: t(lang, 'importData'), icon: <IconDatabaseImport size={16} />, onSelect: onImport },
             { kind: 'item', label: t(lang, 'exportData'), icon: <IconDatabaseExport size={16} />, disabled: data.entries.length === 0 && !data.timer, onSelect: onExport },
+            { kind: 'divider' },
+            { kind: 'item', label: t(lang, 'undoImport'), icon: <IconArrowBackUp size={16} />, disabled: !data.lastImport, onSelect: onUndoImport },
             { kind: 'divider' },
             { kind: 'note', text: t(lang, 'storageNote') },
           ]}

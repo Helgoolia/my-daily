@@ -38,3 +38,8 @@
 .button-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
 /* Time inside a sentence: the Numeric family (Public Sans digits) at the sentence's size */
 .dialog-body .t-numeric-inline { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+
+/* Slot between the body and the actions (Figma: Dialog › Slot), gap 16 */
+.dialog-slot { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-24); }
+.button:disabled { opacity: var(--opacity-disabled); cursor: default; }
+.button-primary:disabled { background: var(--bg-disabled); color: var(--text-disabled); opacity: 1; } /* Primary Disabled */
