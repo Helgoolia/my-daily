@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addTaskToWeek, deleteTask, hideTask, removeFromWeek, renameTask, startTimer, stopTimer, timerInWeek, weekRows } from './actions';
+import { addTaskToWeek, deleteTask, hideTask, removeFromWeek, renameTask, startTimer, stopTimer, startWeek, timerInWeek, weekRows } from './actions';
 import { emptyData } from './types';
 
 const at = (h: number, m = 0) => new Date(2026, 10, 20, h, m);
@@ -138,5 +138,33 @@ describe('past weeks', () => {
     expect(weekRows(next, lastWeek)).toEqual(['b']);
     expect(timerInWeek(d, 'a', at(10))).toBe(true);
     expect(timerInWeek(d, 'a', lastWeek)).toBe(false);
+  });
+});
+
+describe('new week (Flow 12)', () => {
+  const monday = new Date(2026, 10, 23, 9); // Mon 23 Nov
+  const data = () => ({
+    ...emptyData(),
+    tasks: ['a', 'b', 'c', 'd'].map((id) => ({ id, name: id.toUpperCase(), hidden: id === 'c', createdAt: '' })),
+    entries: [
+      { id: '1', taskId: 'b', date: '2026-11-17', minutes: 30, source: 'manual' as const },
+      { id: '2', taskId: 'a', date: '2026-11-20', minutes: 60, source: 'manual' as const },
+      { id: '3', taskId: 'c', date: '2026-11-20', minutes: 60, source: 'manual' as const }, // hidden: stays asleep
+    ],
+    weeks: { '2026-11-16': ['a', 'b', 'c', 'd'] }, // d had 0:00 last week: sleeps
+  });
+
+  it('carries last week’s tasks that had time, in their order', () => {
+    expect(startWeek(data(), monday).weeks['2026-11-23']).toEqual(['a', 'b']);
+  });
+
+  it('carries a timer that is still running from last week', () => {
+    const d = { ...data(), timer: { taskId: 'd', startedAt: new Date(2026, 10, 22, 23).toISOString() } };
+    expect(startWeek(d, monday).weeks['2026-11-23']).toEqual(['a', 'b', 'd']);
+  });
+
+  it('runs once: a week with rows is left alone', () => {
+    const d = { ...data(), weeks: { ...data().weeks, '2026-11-23': [] } };
+    expect(startWeek(d, monday)).toBe(d);
   });
 });
