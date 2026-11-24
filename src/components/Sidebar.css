@@ -60,10 +60,10 @@
   padding: var(--space-8);
   border-radius: var(--radius-8);
 }
-.task-item:hover, .task-item:focus-within, .task-item.is-active { background: var(--state-hover); }
+.task-item:hover, .task-item:has(:focus-visible), .task-item.is-active { background: var(--state-hover); }
 /* ••• appears on hover / focus / while its menu is open; space reserved so names don't jump */
 .task-item .row-more { display: none; }
-.task-item:hover .row-more, .task-item:focus-within .row-more, .task-item.is-active .row-more { display: inline-flex; }
+.task-item:hover .row-more, .task-item:has(:focus-visible) .row-more, .task-item.is-active .row-more { display: inline-flex; }
 /* Editing: the state moves to the input, so the row loses its hover fill (Figma) */
 .task-item.is-editing, .task-item.is-editing:hover { background: transparent; }
 .task-item .rename-input.is-small { height: 28px; margin-left: calc(-1 * var(--space-4)); border-radius: var(--radius-8); }
@@ -88,12 +88,12 @@
   border: 0;
   border-radius: var(--radius-10);
   background: none;
-  color: var(--text-primary);
+  color: var(--text-secondary); /* Figma Ghost Enabled; Hovered/Pressed → primary */
   cursor: pointer;
 }
 .ghost-icon.is-small { width: 28px; height: 28px; border-radius: var(--radius-8); }
-.ghost-icon:hover { background: var(--state-hover); }
-.ghost-icon:active { background: var(--state-pressed); }
+.ghost-icon:hover { background: var(--state-hover); color: var(--text-primary); }
+.ghost-icon:active { background: var(--state-pressed); color: var(--text-primary); }
 
 .hidden-toggle { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--border-divider); }
 .text-button {
@@ -128,8 +128,8 @@
   cursor: pointer;
 }
 .secondary-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
-.secondary-button:active,
-.secondary-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
+.secondary-button:active { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); } /* Figma Pressed */
+.secondary-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); } /* open menu = Hovered look */
 .menu {
   position: absolute;
   top: calc(100% + var(--space-4));
@@ -183,3 +183,6 @@
 .segment.is-selected { background: var(--bg-elevated); color: var(--text-primary); } /* Figma Segment · Selected = bg/elevated */
 
 .sidebar-empty { margin: 0; padding: 0 var(--space-8); color: var(--text-secondary); }
+
+/* Figma Preferences › Right: language + data button */
+.preferences-right { display: flex; align-items: center; gap: var(--space-8); }

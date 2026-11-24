@@ -4,8 +4,10 @@ import { createPortal } from 'react-dom';
 import './Menu.css';
 
 export type MenuEntry =
-  | { kind: 'item'; label: string; description?: string; icon?: ReactNode; destructive?: boolean; onSelect: () => void }
-  | { kind: 'divider' };
+  | { kind: 'item'; label: string; description?: string; icon?: ReactNode; destructive?: boolean; disabled?: boolean; onSelect: () => void }
+  | { kind: 'divider' }
+  /** Plain text at the bottom of a menu (Body/S, text/secondary), not focusable — e.g. the storage note */
+  | { kind: 'note'; text: string };
 
 /**
  * ••• button + menu — Figma: Menu / Menu Item / Menu Divider.
@@ -19,11 +21,19 @@ export function MoreMenu({
   entries,
   size = 'm',
   onOpenChange,
+  icon = <IconDots size={16} />,
+  align = 'start',
+  width,
 }: {
   label: string;
   entries: MenuEntry[];
   size?: 's' | 'm';
   onOpenChange?: (open: boolean) => void;
+  /** Trigger icon (default •••) */
+  icon?: ReactNode;
+  /** start: left edges aligned (row menus) · end: right edges aligned (footer buttons at the right) */
+  align?: 'start' | 'end';
+  width?: number;
 }) {
   const [open, setOpenState] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -46,10 +56,10 @@ export function MoreMenu({
     const below = r.bottom + 4 + m.height <= window.innerHeight - 8;
     setPos({
       top: below ? r.bottom + 4 : r.top - 4 - m.height,
-      left: Math.max(8, Math.min(r.left, window.innerWidth - 8 - m.width)),
+      left: Math.max(8, Math.min(align === 'end' ? r.right - m.width : r.left, window.innerWidth - 8 - m.width)),
     });
-    menu.current.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
-  }, [open]);
+    menu.current.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus();
+  }, [open, align]);
 
   useEffect(() => {
     if (!open) return;
@@ -66,7 +76,7 @@ export function MoreMenu({
   });
 
   const onKey = (e: React.KeyboardEvent) => {
-    const items = [...(menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])];
+    const items = [...(menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? [])];
     const i = items.indexOf(document.activeElement as HTMLButtonElement);
     if (e.key === 'Escape') { e.preventDefault(); close(); }
     else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length]?.focus(); }
@@ -88,7 +98,7 @@ export function MoreMenu({
           setOpen(!open);
         }}
       >
-        <IconDots size={16} />
+        {icon}
       </button>
       {open &&
         createPortal(
@@ -98,17 +108,20 @@ export function MoreMenu({
             role="menu"
             aria-label={label}
             onKeyDown={onKey}
-            style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
+            style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, width }}
           >
             {entries.map((entry, i) =>
               entry.kind === 'divider' ? (
                 <li key={i} role="separator" className="menu-divider" />
+              ) : entry.kind === 'note' ? (
+                <li key={i} role="none" className="menu-note t-body-s">{entry.text}</li>
               ) : (
                 <li key={i} role="none">
                   <button
                     type="button"
                     role="menuitem"
                     className={`menu-item has-icon ${entry.destructive ? 'is-destructive' : ''}`}
+                    disabled={entry.disabled}
                     onClick={() => {
                       close(false);
                       entry.onSelect();
