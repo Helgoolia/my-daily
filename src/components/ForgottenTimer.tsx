@@ -39,8 +39,7 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
   const [step, setStep] = useState<'ask' | 'pick'>('ask');
   const [value, setValue] = useState(() => clock(suggestStop(startedAt, now, lastSeen)));
   const [tried, setTried] = useState(false);
-  // While a time is half-typed the hint keeps the last valid session, so the dialog doesn't jump
-  const [lastValid, setLastValid] = useState<Date | null>(null);
+
 
   const day = dayWord(startedAt, now);
   const when =
@@ -69,8 +68,8 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
   }
 
   const stopAt = resolveStop(value, startedAt, now);
-  if (stopAt && stopAt.getTime() !== lastValid?.getTime()) setLastValid(stopAt);
-  const hintAt = stopAt ?? lastValid;
+  // Checked when the field is left or on Stop — not on every key. While a time is half-typed the line
+  // under the field says the allowed range in grey (same height, no jump); it turns red only after that.
   const showError = tried && !stopAt;
   const submit = () => (stopAt ? onStopAt(stopAt) : setTried(true));
   return (
@@ -95,17 +94,16 @@ export function ForgottenTimer({ lang, taskName, startedAt, now, lastSeen, onKee
         onChange={(v) => { setValue(v); setTried(false); }}
         options={stopOptions(startedAt, now).map(clock)}
         onSubmit={submit}
+        onLeave={() => setTried(true)}
         label={t(lang, 'stopAtLabel')}
         toggleLabel={t(lang, 'showTimes')}
         invalid={showError}
         describedBy="stop-at-hint"
       />
       <p id="stop-at-hint" className={`t-body-s picker-hint ${showError ? 'is-error' : ''}`} aria-live="polite">
-        {showError
-          ? tf(lang, 'stopAtError', { from: clock(startedAt), to: clock(now) })
-          : hintAt
-            ? tf(lang, 'sessionHint', { time: formatMinutes((hintAt.getTime() - startedAt.getTime()) / 60_000), from: clock(startedAt), to: clock(hintAt) })
-            : ' '}
+        {stopAt
+          ? tf(lang, 'sessionHint', { time: formatMinutes((stopAt.getTime() - startedAt.getTime()) / 60_000), from: clock(startedAt), to: clock(stopAt) })
+          : tf(lang, 'stopAtError', { from: clock(startedAt), to: clock(now) })}
       </p>
     </Dialog>
   );

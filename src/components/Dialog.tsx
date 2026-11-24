@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './Dialog.css';
 
-const FOCUSABLE = 'button:not(:disabled), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Dialog shell — Figma: Dialog (title, body, slot, actions). Scrim, Esc / scrim click = cancel,

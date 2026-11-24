@@ -28,8 +28,13 @@ body {
   padding: var(--space-16);
 }
 
-/* Scrollbar — Figma: Components / Scrollbar. Native scrolling, styled: thin, token colours. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+/* Scrollbar — Figma: Components / Scrollbar. Native scrolling, styled: 4 px, token colours, no arrow
+   buttons. Chrome/Safari/Edge use ::-webkit-scrollbar (it only applies while scrollbar-width/color stay
+   auto); Firefox gets its thin native one. */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { min-height: 24px; border-radius: 2px; background: var(--border-strong); }
+::-webkit-scrollbar-button { display: none; }
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 }

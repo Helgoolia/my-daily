@@ -49,13 +49,8 @@
   z-index: 70;
 }
 .picker-list .menu-item { cursor: pointer; }
-/* Thin 4 px scrollbar right at the edge, no arrows: rows keep 4 px to it, like the left padding.
-   (scrollbar-width/color must be auto, or Chrome ignores the ::-webkit-scrollbar rules) */
-.menu.picker-list { scrollbar-width: auto; scrollbar-color: auto; }
-.picker-list::-webkit-scrollbar { width: 4px; }
-.picker-list::-webkit-scrollbar-track { margin: var(--space-8) 0; background: transparent; }
-.picker-list::-webkit-scrollbar-thumb { border-radius: 2px; background: var(--border-strong); }
-.picker-list::-webkit-scrollbar-button { display: none; }
-@supports not selector(::-webkit-scrollbar) { .menu.picker-list { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; } }
+/* The global 4 px scrollbar sits right at the edge, so rows keep 4 px to it, like the left padding;
+   its track stops short of the rounded corners */
+.picker-list::-webkit-scrollbar-track { margin: var(--space-8) 0; }
 .picker-hint { margin: 0; min-height: 20px; color: var(--text-secondary); } /* reserved: the dialog never changes height */
 .picker-hint.is-error { color: var(--text-error); }

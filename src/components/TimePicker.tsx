@@ -10,6 +10,8 @@ type Props = {
   options: string[];
   /** Enter with the list closed */
   onSubmit: () => void;
+  /** The field lost focus (not to its own list) */
+  onLeave?: () => void;
   label: string;
   toggleLabel: string;
   invalid?: boolean;
@@ -22,7 +24,7 @@ type Props = {
  * 6 rows visible, opens with the selected time in view); ↑↓ move, Enter picks, Esc closes the list
  * only. Typing moves the highlight to the first matching time. List sits 8 px under the field.
  */
-export function TimePicker({ value, onChange, options, onSubmit, label, toggleLabel, invalid, describedBy }: Props) {
+export function TimePicker({ value, onChange, options, onSubmit, onLeave, label, toggleLabel, invalid, describedBy }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const list = useRef<HTMLDivElement>(null);
@@ -46,7 +48,7 @@ export function TimePicker({ value, onChange, options, onSubmit, label, toggleLa
   }, [open, active]);
 
   return (
-    <div className={`picker ${invalid ? 'has-error' : ''}`} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}>
+    <div className={`picker ${invalid ? 'has-error' : ''}`} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) { setOpen(false); onLeave?.(); } }}>
       <IconClock size={16} className="picker-icon" aria-hidden />
       <input
         ref={input}
