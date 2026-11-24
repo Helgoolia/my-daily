@@ -280,6 +280,14 @@ export default function App() {
           onNextWeek={() => goToWeek(addDays(shownMonday, 7))}
           onThisWeek={() => setViewWeek(null)}
           onShareDownloaded={(file) => showToast(tf(lang, 'toastImageDownloaded', { file }))}
+          onShareLinkCopied={(url) =>
+            setToast({
+              id: ++toastId.current,
+              message: tf(lang, 'toastLinkCopied', { week: weekLabel }),
+              actionLabel: t(lang, 'open'),
+              onAction: () => window.open(url, '_blank', 'noopener'),
+            })
+          }
           onStart={(id) => update((d) => startTimer(d, id))}
           onStop={() => update((d) => stopTimer(d))}
           onAddTask={(name) => {
