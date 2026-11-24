@@ -67,6 +67,15 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
     row.classList.add('is-new');
     row.addEventListener('animationend', () => row.classList.remove('is-new'), { once: true });
   });
+  // A sideways-scrolling grid opens with today in view (Figma 768: "on open the grid scrolls so today is in view")
+  const scroller = useRef<HTMLDivElement>(null);
+  const shownKey = toISODate(monday);
+  useEffect(() => {
+    const el = scroller.current;
+    const today = el?.querySelector<HTMLElement>('[data-today]');
+    if (!el || !today || el.scrollWidth <= el.clientWidth) return;
+    el.scrollLeft = today.offsetLeft - (el.clientWidth - today.offsetWidth) / 2;
+  }, [shownKey]);
   const days = weekDays(monday);
   const dates = days.map(toISODate);
   const todayISO = toISODate(now);
@@ -136,11 +145,13 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
         </div>
       </header>
 
+      {/* 768–899: only the grid scrolls sideways (Task sticks left, Total right); the header stays */}
+      <div className="grid-scroll" ref={scroller}>
       {/* Today's column is 140 px (room for time + play/stop); other days share the rest */}
       <div
         className="grid"
         role="table"
-        style={{ '--cols': `280px ${dates.map((d) => (d === todayISO ? '140px' : 'minmax(64px, 1fr)')).join(' ')} 100px` } as React.CSSProperties}
+        style={{ '--cols': `var(--task-w) ${dates.map((d) => (d === todayISO ? '140px' : 'minmax(64px, 1fr)')).join(' ')} var(--total-w)` } as React.CSSProperties}
       >
         <div className="row row-head" role="row">
           <div className="cell cell-task cell-head-label t-caption" role="columnheader">{t(lang, 'task')}</div>
@@ -150,6 +161,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             return (
               <div
                 key={dates[i]}
+                data-today={isToday || undefined}
                 className={`cell cell-day-head ${isToday ? 'is-today' : ''} ${isWeekend && !isToday ? 'is-weekend' : ''}`}
                 role="columnheader"
               >
@@ -238,6 +250,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             <div className="cell cell-total t-numeric-m-medium" role="cell">{formatMinutes(weekTotal)}</div>
           </div>
         )}
+      </div>
       </div>
 
       <AddTask
