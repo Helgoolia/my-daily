@@ -30,21 +30,34 @@ export function demoData(now = new Date()): AppData {
     }),
   );
 
-  // Older history: all-time totals, tasks that are not in this week, hidden tasks.
-  const past = (weeksAgo: number) => toISODate(addDays(monday, -7 * weeksAgo));
-  const extra: [string, boolean, number][] = [
-    ['Helgoolia', false, 580],
-    ['Interview SigmaSoftw', false, 180],
-    ['Looking for a job', true, 24720],
-    ['Webflow course', true, 900],
+  // Older history, spread over real days (a day never holds more than 24:00), so past weeks look
+  // like the Figma "Week · Past week": four weeks back, weekdays busier, weekends light.
+  const back = (days: number) => toISODate(addDays(monday, -days));
+  let n = 0;
+  const add = (taskId: string, date: string, minutes: number) => {
+    if (minutes > 0) entries.push({ id: `h${n++}`, taskId, date, minutes, source: 'manual' });
+  };
+  for (let w = 1; w <= 4; w++)
+    for (let d = 0; d < 7; d++)
+      tasks.slice(0, 6).forEach((task, i) => {
+        const weekend = d >= 5;
+        const steps = (i * (weekend ? 1 : 3) + d * 5 + w * 7) % (weekend ? 3 : 7); // a few varied sessions
+        add(task.id, back(7 * w - d), steps * (weekend ? 10 : [30, 20, 20, 15, 10, 10][i]));
+      });
+  // Tasks that are not in this week and hidden ones; long-running ones go far back
+  const extra: [string, boolean, [number, number, number][]][] = [
+    ['Helgoolia', false, [[9, 3, 120], [8, 2, 100]]], // [days ago, sessions, minutes each]
+    ['Interview SigmaSoftw', false, [[17, 1, 180]]],
+    ['Looking for a job', true, [[240, 103, 240]]],
+    ['Webflow course', true, [[300, 6, 150]]],
   ];
-  extra.forEach(([name, hidden, minutes], i) => {
+  extra.forEach(([name, hidden, runs], i) => {
     const id = `x${i}`;
     tasks.push({ id, name, hidden, createdAt: created });
-    entries.push({ id: `ex${i}`, taskId: id, date: past(i + 2), minutes, source: 'manual' });
+    runs.forEach(([from, count, minutes]) => {
+      for (let k = 0; k < count; k++) add(id, back(from - k), minutes);
+    });
   });
-  const olderTotals = [2490, 1735, 1985, 935, 650, 380];
-  olderTotals.forEach((minutes, i) => entries.push({ id: `old${i}`, taskId: tasks[i].id, date: past(1), minutes, source: 'manual' }));
 
   data.tasks = tasks;
   data.entries = entries;

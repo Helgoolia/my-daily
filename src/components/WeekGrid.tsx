@@ -1,10 +1,11 @@
-import { IconArrowBarRight, IconCalendarMinus, IconPencil } from '@tabler/icons-react';
+import { IconArrowBarRight, IconCalendarMinus, IconChevronLeft, IconChevronRight, IconPencil } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { AppData } from '../data/types';
 import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
 import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
 import { dayTotal, minutesFor, taskTotalInRange } from '../lib/totals';
 import { suggestions } from '../lib/taskInfo';
+import { weekRows } from '../data/actions';
 import { AddTask } from './AddTask';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
@@ -29,15 +30,28 @@ type Props = {
   onRemoveFromWeek: (taskId: string) => void;
   /** Edit a cell: that day's time for the task, in minutes (0 clears it) */
   onSetTime: (taskId: string, date: string, minutes: number) => void;
+  /** Week navigation (Figma Week Title): ‹ always; › only up to this week; "This week" when away from it */
+  isCurrent: boolean;
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
+  onThisWeek: () => void;
 };
 
 /**
  * Week grid — Figma: Design / 1 · Screens / "Week · Current (1440)".
  * Columns: Task 280 · days (fill) · Today 140 · Total 100. Row height 72.
  */
-export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime }: Props) {
+export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPickTask, onExpandSidebar, onRename, nameError, onRemoveFromWeek, onSetTime, isCurrent, onPrevWeek, onNextWeek, onThisWeek }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  // Another week on screen: drop a rename in progress (not a remount — that replayed the header's
+  // fade-in, so the sidebar button blinked on every week change)
+  const [shownWeek, setShownWeek] = useState(toISODate(monday));
+  if (shownWeek !== toISODate(monday)) {
+    setShownWeek(toISODate(monday));
+    setEditing(null);
+    setMenuFor(null);
+  }
   const lang = data.settings.language;
   // After adding a task the field lets go of focus and the new row flashes briefly, so the eye finds it;
   // its ▶ is one click away. (Moving focus to ▶ left a yellow ring that read as "active".)
@@ -56,7 +70,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
   const days = weekDays(monday);
   const dates = days.map(toISODate);
   const todayISO = toISODate(now);
-  const taskIds = data.weeks[toISODate(monday)] ?? [];
+  const taskIds = weekRows(data, monday);
   const tasks = taskIds.map((id) => data.tasks.find((x) => x.id === id)).filter((x) => x !== undefined);
 
   // The running session counts in its start day (rule: past midnight stays in the start day).
@@ -87,12 +101,30 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
               </button>
             </Tooltip>
           )}
-          <div>
+          <div className="week-title-text">
           <h1 className="t-heading-l">
             {monthName(lang, monday)} · {t(lang, 'week')} {weekOfMonth(monday)}
           </h1>
           <p className="t-body-s week-range">{weekRange(lang, monday, addDays(monday, 6))}</p>
           </div>
+          <nav className="week-nav" aria-label={t(lang, 'week')}>
+            <Tooltip label={t(lang, 'prevWeek')} placement="below">
+              <button type="button" className="icon-button" onClick={onPrevWeek} aria-label={t(lang, 'prevWeek')}>
+                <IconChevronLeft size={16} />
+              </button>
+            </Tooltip>
+            {/* No future weeks: nothing can be tracked there, so › stops at this week */}
+            <Tooltip label={t(lang, 'nextWeek')} placement="below" suppressed={isCurrent}>
+              <button type="button" className="icon-button" onClick={onNextWeek} disabled={isCurrent} aria-label={t(lang, 'nextWeek')}>
+                <IconChevronRight size={16} />
+              </button>
+            </Tooltip>
+            {!isCurrent && (
+              <button type="button" className="button button-secondary t-body-m-medium" onClick={onThisWeek}>
+                {t(lang, 'goToThisWeek')}
+              </button>
+            )}
+          </nav>
         </div>
         <div className="week-summary">
           <span className="t-overline week-summary-label">{t(lang, 'weekTotal')}</span>
@@ -159,7 +191,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
                     onOpenChange={(o) => setMenuFor(o ? task.id : null)}
                     entries={[
                       { kind: 'item', label: t(lang, 'rename'), icon: <IconPencil size={16} />, onSelect: () => setEditing(task.id) },
-                      { kind: 'item', label: t(lang, 'removeFromWeek'), icon: <IconCalendarMinus size={16} />, onSelect: () => onRemoveFromWeek(task.id) },
+                      { kind: 'item', label: t(lang, isCurrent ? 'removeFromWeek' : 'removeFromWeekPast'), icon: <IconCalendarMinus size={16} />, onSelect: () => onRemoveFromWeek(task.id) },
                     ]}
                   />
                 </span>

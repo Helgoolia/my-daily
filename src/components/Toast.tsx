@@ -24,6 +24,13 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
   const left = useRef(5000);
   const started = useRef(0);
 
+  // A new toast starts its full 5 s, unpaused: the old one may have gone while hovered or focused
+  // (Undo clicked), and then no mouseleave/blur ever came — the next toast stayed until hovered.
+  const [shownId, setShownId] = useState(toast?.id);
+  if (shownId !== toast?.id) {
+    setShownId(toast?.id);
+    setPaused(false);
+  }
   useEffect(() => {
     left.current = 5000;
   }, [toast?.id]);

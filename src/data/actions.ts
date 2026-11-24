@@ -25,12 +25,36 @@ export function startTimer(data: AppData, taskId: string, now = new Date()): App
   return ensureInWeek({ ...stopped, timer: { taskId, startedAt: now.toISOString() } }, taskId, now);
 }
 
+const weekDates = (monday: Date) => Array.from({ length: 7 }, (_, i) => toISODate(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)));
+
+/**
+ * Rows of the week of `day`: the stored rows, then every task that has time that week but no stored
+ * row (imported history, older weeks), in task-list order, so rows sit the same way in every week;
+ * the running task too. A week's
+ * time can never be hidden from its grid — so past weeks show their history even if no rows were saved.
+ */
+export function weekRows(data: AppData, day: Date): string[] {
+  const dates = new Set(weekDates(mondayOf(day)));
+  const known = new Set(data.tasks.map((t) => t.id));
+  const rows = (data.weeks[toISODate(mondayOf(day))] ?? []).filter((id) => known.has(id));
+  const seen = new Set(rows);
+  const add = (id: string) => { if (!seen.has(id) && known.has(id)) { seen.add(id); rows.push(id); } };
+  const withTime = new Set(data.entries.filter((e) => dates.has(e.date) && e.minutes > 0).map((e) => e.taskId));
+  data.tasks.forEach((t) => { if (withTime.has(t.id)) add(t.id); });
+  if (data.timer && dates.has(toISODate(new Date(data.timer.startedAt)))) add(data.timer.taskId);
+  return rows;
+}
+
+/** Is the running timer counting in the week of `day`? (A session belongs to the day it started.) */
+export const timerInWeek = (data: AppData, taskId: string, day: Date) =>
+  data.timer?.taskId === taskId && toISODate(mondayOf(new Date(data.timer.startedAt))) === toISODate(mondayOf(day));
+
 /** Adds a task to the week of `day` (rows keep their order; new ones go to the end). */
 export function ensureInWeek(data: AppData, taskId: string, day = new Date()): AppData {
   const key = toISODate(mondayOf(day));
-  const rows = data.weeks[key] ?? [];
-  if (rows.includes(taskId)) return data;
-  return { ...data, weeks: { ...data.weeks, [key]: [...rows, taskId] } };
+  const rows = weekRows(data, day);
+  if (rows.includes(taskId) && data.weeks[key]?.includes(taskId)) return data;
+  return { ...data, weeks: { ...data.weeks, [key]: rows.includes(taskId) ? rows : [...rows, taskId] } };
 }
 
 export const findTaskByName = (data: AppData, name: string) =>
@@ -40,7 +64,7 @@ export const findTaskByName = (data: AppData, name: string) =>
  * "Name a task" → Enter. An exact (case-insensitive) match brings the existing task back into
  * this week with all its time — no duplicate names. Otherwise a new task is created.
  */
-export function addTaskToWeek(data: AppData, rawName: string, now = new Date()): { data: AppData; taskId: string | null } {
+export function addTaskToWeek(data: AppData, rawName: string, now = new Date(), day = now): { data: AppData; taskId: string | null } {
   const name = rawName.trim().replace(/\s+/g, ' ');
   if (!name) return { data, taskId: null };
   const existing = findTaskByName(data, name);
@@ -48,18 +72,16 @@ export function addTaskToWeek(data: AppData, rawName: string, now = new Date()):
     const unhidden = existing.hidden
       ? { ...data, tasks: data.tasks.map((t) => (t.id === existing.id ? { ...t, hidden: false } : t)) }
       : data;
-    return { data: ensureInWeek(unhidden, existing.id, now), taskId: existing.id };
+    return { data: ensureInWeek(unhidden, existing.id, day), taskId: existing.id };
   }
   const task: Task = { id: newId(), name, hidden: false, createdAt: now.toISOString() };
-  return { data: ensureInWeek({ ...data, tasks: [...data.tasks, task] }, task.id, now), taskId: task.id };
+  return { data: ensureInWeek({ ...data, tasks: [...data.tasks, task] }, task.id, day), taskId: task.id };
 }
 
 export const setHidden = (data: AppData, taskId: string, hidden: boolean): AppData => ({
   ...data,
   tasks: data.tasks.map((t) => (t.id === taskId ? { ...t, hidden } : t)),
 });
-
-const weekDates = (monday: Date) => Array.from({ length: 7 }, (_, i) => toISODate(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)));
 
 /** Minutes a task has in the week of `day` (stored entries only). */
 export function weekMinutes(data: AppData, taskId: string, day = new Date()): number {
@@ -68,8 +90,8 @@ export function weekMinutes(data: AppData, taskId: string, day = new Date()): nu
 }
 
 /**
- * Remove from this week: deletes this week's time for the task and drops its row.
- * The task and its time in other weeks stay. A timer running on it stops without saving.
+ * Remove from a week: deletes that week's time for the task and drops its row.
+ * The task and its time in other weeks stay. A timer running on it in that week stops without saving.
  */
 export function removeFromWeek(data: AppData, taskId: string, day = new Date()): AppData {
   const monday = mondayOf(day);
@@ -78,8 +100,8 @@ export function removeFromWeek(data: AppData, taskId: string, day = new Date()):
   return {
     ...data,
     entries: data.entries.filter((e) => !(e.taskId === taskId && dates.has(e.date))),
-    weeks: { ...data.weeks, [key]: (data.weeks[key] ?? []).filter((id) => id !== taskId) },
-    timer: data.timer?.taskId === taskId ? null : data.timer,
+    weeks: { ...data.weeks, [key]: weekRows(data, day).filter((id) => id !== taskId) },
+    timer: timerInWeek(data, taskId, day) ? null : data.timer,
   };
 }
 
@@ -104,7 +126,7 @@ export function hideTask(data: AppData, taskId: string, day = new Date()): AppDa
   let next = setHidden(data, taskId, true);
   if (weekMinutes(next, taskId, day) === 0 && next.timer?.taskId !== taskId) {
     const key = toISODate(mondayOf(day));
-    next = { ...next, weeks: { ...next.weeks, [key]: (next.weeks[key] ?? []).filter((id) => id !== taskId) } };
+    next = { ...next, weeks: { ...next.weeks, [key]: weekRows(next, day).filter((id) => id !== taskId) } };
   }
   return next;
 }
