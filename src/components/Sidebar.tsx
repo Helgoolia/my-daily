@@ -19,7 +19,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { AppData, Settings, Task } from '../data/types';
 import { t, tf } from '../lib/i18n';
 import { rowStatus, taskInfos } from '../lib/taskInfo';
-import { formatMinutes, mondayOf, toISODate } from '../lib/time';
+import { formatMinutes } from '../lib/time';
+import { weekRows } from '../data/actions';
 import { Logo } from './Logo';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
@@ -64,7 +65,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   // Pointer/focus on a row's quick action: its own tooltip replaces the row tooltip
   const [actionFor, setActionFor] = useState<string | null>(null);
   const infos = taskInfos(data, now);
-  const weekRows = new Set(data.weeks[toISODate(mondayOf(now))] ?? []);
+  const weekRowIds = new Set(weekRows(data, now));
 
   // All-time total and last use per task, including the running session.
   const timer = data.timer;
@@ -92,7 +93,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
 
   const row = (task: Task) => {
     const running = timer?.taskId === task.id;
-    const inWeek = weekRows.has(task.id);
+    const inWeek = weekRowIds.has(task.id);
     const info = infos.get(task.id);
     return (
       // Row tooltip on every row (Figma, Sidebar Task Item): name + status, right of the row

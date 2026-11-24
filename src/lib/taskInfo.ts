@@ -1,6 +1,7 @@
 import type { AppData, Task } from '../data/types';
 import { t, tf, type Lang } from './i18n';
-import { formatMinutes, fromISODate, mondayOf, toISODate } from './time';
+import { formatMinutes, fromISODate, toISODate } from './time';
+import { weekRows } from '../data/actions';
 
 /**
  * Per-task facts shown in the sidebar tooltip and in the "Name a task" suggestions:
@@ -16,7 +17,7 @@ export type TaskInfo = {
 };
 
 export function taskInfos(data: AppData, now: Date): Map<string, TaskInfo> {
-  const week = new Set(data.weeks[toISODate(mondayOf(now))] ?? []);
+  const week = new Set(weekRows(data, now));
   const live = data.timer ? Math.max(0, (now.getTime() - new Date(data.timer.startedAt).getTime()) / 60_000) : 0;
   const map = new Map<string, TaskInfo>();
   for (const task of data.tasks) {

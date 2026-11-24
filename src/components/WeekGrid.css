@@ -12,6 +12,9 @@
 .week-header h1 { margin: 0; }
 .week-title { display: flex; align-items: flex-start; gap: var(--space-12); }
 .week-range { margin: var(--space-4) 0 0; color: var(--text-secondary); }
+/* Figma Week Title: title · 16 · ‹ › This week (gap 8), top-aligned */
+.week-title-text { margin-right: var(--space-4); }
+.week-nav { display: flex; align-items: center; gap: var(--space-8); }
 
 .week-summary {
   display: flex;
@@ -102,6 +105,7 @@
 .icon-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
 .icon-button:active { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); }
 .icon-button:focus-visible { outline-offset: 2px; border-radius: var(--radius-10); }
+.icon-button:disabled { opacity: var(--opacity-disabled); cursor: default; border-color: var(--border-default); background-image: none; }
 .icon-button.is-primary { border-color: transparent; background-color: var(--bg-accent); color: var(--text-on-accent); }
 .icon-button.is-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
 

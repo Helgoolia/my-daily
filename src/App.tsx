@@ -7,6 +7,7 @@ import {
   addTaskToWeek,
   deleteTask,
   ensureInWeek,
+  timerInWeek,
   hideTask,
   removeFromWeek,
   setDayMinutes,
@@ -15,17 +16,18 @@ import {
   startTimer,
   stopTimer,
   weekMinutes,
+  weekRows,
 } from './data/actions';
 import type { AppData } from './data/types';
-import { plural, t, tf, weekdayShort } from './lib/i18n';
+import { plural, t, tf, weekRange, weekdayShort } from './lib/i18n';
 import { applyImport, undoImport } from './lib/importCsv';
 import { ImportDialog } from './components/ImportDialog';
 import { allTimeTotal } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
-import { formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
+import { addDays, formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
-type Confirm = { kind: 'remove' | 'delete'; taskId: string };
+type Confirm = { kind: 'remove' | 'delete'; taskId: string; day: Date };
 
 /**
  * Dialog sentence with the two facts in bold: the task name (with its colon) and the time that
@@ -77,20 +79,21 @@ export default function App() {
     });
   };
 
-  const removeNow = (id: string) =>
-    withUndo(id, (d) => removeFromWeek(d, id, now), tf(lang, 'toastRemoved', { name: nameOf(id) }));
+  const removeNow = (id: string, day: Date) =>
+    withUndo(id, (d) => removeFromWeek(d, id, day), msg('toastRemoved', nameOf(id)));
   const deleteNow = (id: string) =>
     withUndo(id, (d) => deleteTask(d, id), tf(lang, 'toastDeleted', { name: nameOf(id) }));
 
   const onRemoveFromWeek = (id: string) => {
     // Nothing to lose → no question, just Undo
-    if (weekMinutes(data, id, now) <= 0 && data.timer?.taskId !== id) return removeNow(id);
-    setConfirm({ kind: 'remove', taskId: id });
+    const day = shownMonday;
+    if (weekMinutes(data, id, day) <= 0 && !timerInWeek(data, id, day)) return removeNow(id, day);
+    setConfirm({ kind: 'remove', taskId: id, day });
   };
 
   const onDelete = (id: string) => {
     if (allTimeTotal(data.entries, id) <= 0 && data.timer?.taskId !== id) return deleteNow(id);
-    setConfirm({ kind: 'delete', taskId: id });
+    setConfirm({ kind: 'delete', taskId: id, day: now });
   };
 
   /** Name taken by another task (case-insensitive) → error text, else null. Checked while typing. */
@@ -108,6 +111,16 @@ export default function App() {
     return result.reason === 'exists' ? tf(lang, 'nameExists', { name: result.existingName ?? name.trim() }) : null;
   };
   const now = useNow(data.timer ? 1000 : 60_000);
+  // Week on screen: null = this week (follows the clock, so Monday opens the new week by itself)
+  const [viewWeek, setViewWeek] = useState<string | null>(null);
+  const thisMonday = mondayOf(now);
+  const shownMonday = viewWeek && viewWeek < toISODate(thisMonday) ? fromISODate(viewWeek) : thisMonday;
+  const isCurrent = toISODate(shownMonday) === toISODate(thisMonday);
+  const goToWeek = (monday: Date) => setViewWeek(toISODate(monday) < toISODate(thisMonday) ? toISODate(monday) : null);
+  // "this week" in messages becomes the dates of the week on screen
+  const weekLabel = weekRange(lang, shownMonday, addDays(shownMonday, 6), now);
+  const msg = (key: 'toastRemoved' | 'toastAdded', name: string) =>
+    isCurrent ? tf(lang, key, { name }) : tf(lang, key === 'toastRemoved' ? 'toastRemovedPast' : 'toastAddedPast', { name, week: weekLabel });
   // A day holds at most 24:00. If typed time plus the running timer reach it, the timer stops right at
   // the limit (it can't have run longer than the day has room for) and says why.
   useEffect(() => {
@@ -177,22 +190,27 @@ export default function App() {
       <main className="app">
         <WeekGrid
           data={data}
-          monday={mondayOf(now)}
+          key={toISODate(shownMonday)}
+          monday={shownMonday}
           now={now}
+          isCurrent={isCurrent}
+          onPrevWeek={() => goToWeek(addDays(shownMonday, -7))}
+          onNextWeek={() => goToWeek(addDays(shownMonday, 7))}
+          onThisWeek={() => setViewWeek(null)}
           onStart={(id) => update((d) => startTimer(d, id))}
           onStop={() => update((d) => stopTimer(d))}
           onAddTask={(name) => {
             // Compute once from current data so the id is known right away (for focus).
-            const result = addTaskToWeek(data, name, now);
+            const result = addTaskToWeek(data, name, now, shownMonday);
             update(() => result.data);
             return result.taskId;
           }}
           onPickTask={(id) => {
             const task = data.tasks.find((x) => x.id === id);
-            const inWeek = (data.weeks[toISODate(mondayOf(now))] ?? []).includes(id);
+            const inWeek = weekRows(data, shownMonday).includes(id);
             // Already here and visible: just show where it is
             if (task && inWeek && !task.hidden) return flash(`[data-row="${id}"]`);
-            withUndo(id, (d) => ensureInWeek(setHidden(d, id, false), id, now), tf(lang, 'toastAdded', { name: nameOf(id) }));
+            withUndo(id, (d) => ensureInWeek(setHidden(d, id, false), id, shownMonday), msg('toastAdded', nameOf(id)));
             flash(`[data-row="${id}"], [data-task="${id}"]`);
           }}
           onExpandSidebar={collapsed ? () => setSettings({ sidebarCollapsed: false }) : undefined}
@@ -211,20 +229,22 @@ export default function App() {
       </main>
       {confirm && (() => {
         // Built on every render so the time stays live while the timer runs, and matches the grid
-        const { kind, taskId } = confirm;
-        const running = data.timer?.taskId === taskId;
-        const base = kind === 'remove' ? weekMinutes(data, taskId, now) : allTimeTotal(data.entries, taskId);
+        const { kind, taskId, day } = confirm;
+        const running = kind === 'remove' ? timerInWeek(data, taskId, day) : data.timer?.taskId === taskId;
+        const base = kind === 'remove' ? weekMinutes(data, taskId, day) : allTimeTotal(data.entries, taskId);
         const time = formatMinutes(base + (running ? runningMinutes : 0));
-        const key = kind === 'remove' ? (running ? 'removeBodyRunning' : 'removeBody') : (running ? 'deleteBodyRunning' : 'deleteBody');
+        // A past week: "that week" + its dates instead of "this week"
+        const past = kind === 'remove' && toISODate(mondayOf(day)) !== toISODate(thisMonday);
+        const key = kind === 'remove' ? (past ? 'removeBodyPast' : running ? 'removeBodyRunning' : 'removeBody') : (running ? 'deleteBodyRunning' : 'deleteBody');
         return (
         <ConfirmDialog
-          title={t(lang, kind === 'remove' ? 'removeTitle' : 'deleteTitle')}
+          title={past ? tf(lang, 'removeTitlePast', { week: weekRange(lang, mondayOf(day), addDays(mondayOf(day), 6), now) }) : t(lang, kind === 'remove' ? 'removeTitle' : 'deleteTitle')}
           body={withFacts(t(lang, key), nameOf(taskId), time)}
           confirmLabel={t(lang, kind === 'remove' ? 'remove' : 'delete')}
           cancelLabel={t(lang, 'cancel')}
           onConfirm={() => {
             setConfirm(null);
-            if (kind === 'remove') removeNow(taskId);
+            if (kind === 'remove') removeNow(taskId, day);
             else deleteNow(taskId);
           }}
           onCancel={() => setConfirm(null)}

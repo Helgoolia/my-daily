@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addTaskToWeek, deleteTask, hideTask, removeFromWeek, renameTask, startTimer, stopTimer } from './actions';
+import { addTaskToWeek, deleteTask, hideTask, removeFromWeek, renameTask, startTimer, stopTimer, timerInWeek, weekRows } from './actions';
 import { emptyData } from './types';
 
 const at = (h: number, m = 0) => new Date(2026, 10, 20, h, m);
@@ -105,5 +105,38 @@ describe('setDayMinutes (edit a cell)', () => {
     expect(data.entries).toMatchObject([{ taskId, date: '2026-11-20', minutes: 105, source: 'manual' }]);
     data = setDayMinutes(data, taskId!, '2026-11-20', 0);
     expect(data.entries).toEqual([]);
+  });
+});
+
+describe('past weeks', () => {
+  const lastWeek = new Date(2026, 10, 12, 12); // Thu of the week before (Mon 9 Nov)
+  const base = () => {
+    const d = { ...emptyData(), tasks: [{ id: 'a', name: 'A', hidden: false, createdAt: '' }, { id: 'b', name: 'B', hidden: true, createdAt: '' }] };
+    // Imported history: time on 10 and 9 Nov, no stored rows for that week
+    d.entries = [
+      { id: '1', taskId: 'b', date: '2026-11-10', minutes: 30, source: 'import' as const },
+      { id: '2', taskId: 'a', date: '2026-11-09', minutes: 60, source: 'import' as const },
+    ];
+    return d;
+  };
+
+  it('shows every task with time that week, even without stored rows (hidden ones too)', () => {
+    expect(weekRows(base(), lastWeek)).toEqual(['a', 'b']);
+  });
+
+  it('adds a task to the week on screen, keeping the rows it already shows', () => {
+    const { data, taskId } = addTaskToWeek(base(), 'New', at(9), lastWeek);
+    expect(data.weeks['2026-11-09']).toEqual(['a', 'b', taskId]);
+    expect(data.weeks['2026-11-16']).toBeUndefined();
+  });
+
+  it('removing from a past week leaves a timer running this week alone', () => {
+    const d = { ...base(), timer: { taskId: 'a', startedAt: at(9).toISOString() } };
+    const next = removeFromWeek(d, 'a', lastWeek);
+    expect(next.timer).not.toBeNull();
+    expect(next.entries.map((e) => e.id)).toEqual(['1']);
+    expect(weekRows(next, lastWeek)).toEqual(['b']);
+    expect(timerInWeek(d, 'a', at(10))).toBe(true);
+    expect(timerInWeek(d, 'a', lastWeek)).toBe(false);
   });
 });
