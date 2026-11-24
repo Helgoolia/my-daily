@@ -110,7 +110,7 @@ export function ImportDialog({
 
   return (
     <Dialog
-      title={t(lang, 'importData')}
+      title={t(lang, 'importTitle')}
       description={t(lang, 'importIntro')}
       width={560}
       onCancel={onCancel}
@@ -122,7 +122,7 @@ export function ImportDialog({
       }
     >
       <label
-        className={`file-drop ${dragging ? 'is-dragging' : ''} ${error ? 'has-error' : ''}`}
+        className={`file-drop ${dragging ? 'is-dragging' : ''}`}
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.current?.click(); } }}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -134,7 +134,13 @@ export function ImportDialog({
         <span className="t-body-s file-drop-hint">{t(lang, 'importFormat')}</span>
         <input ref={input} type="file" accept=".csv,text/csv" hidden onChange={(e) => { void take(e.target.files?.[0]); e.target.value = ''; }} />
       </label>
-      {error && <p className="t-body-s import-error" role="alert">{error}</p>}
+      {error && (
+        // Figma: what went wrong in error colour, what to do in secondary — two lines
+        <p className="t-body-s import-error" role="alert">
+          <span className="import-error-what">{error}</span>
+          <span>{t(lang, 'notCsvHelp')}</span>
+        </p>
+      )}
     </Dialog>
   );
 }
