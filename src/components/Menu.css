@@ -16,5 +16,5 @@
 .ghost-icon.is-pressed { background: var(--state-hover); color: var(--text-primary); }
 
 .menu-item:disabled { opacity: var(--opacity-disabled); cursor: default; background: none; }
-/* Storage note under the Data menu: Body/S, text/secondary, menu item padding */
-.menu-note { padding: var(--space-8) var(--space-12); color: var(--text-secondary); white-space: normal; }
+/* Storage note under the Data menu (Figma: padding 4/8/6, text lines up with the item icons) */
+.menu-note { padding: var(--space-4) var(--space-8) calc(var(--space-4) + var(--space-2)); color: var(--text-secondary); white-space: normal; }
