@@ -160,7 +160,7 @@ export function SharePopover({ data, monday, now, lang, compact, disabled, onDow
               <button type="button" className="button button-secondary t-body-m-medium" onClick={() => void download()}>
                 <IconDownload size={16} aria-hidden /> {t(lang, 'downloadPng')}
               </button>
-              <button type="button" className="button button-primary is-small t-body-s-medium" onClick={() => void copy()}>
+              <button type="button" className="button button-primary t-body-m-medium" onClick={() => void copy()}>
                 <IconLink size={16} aria-hidden /> {t(lang, 'copyLink')}
               </button>
             </div>
