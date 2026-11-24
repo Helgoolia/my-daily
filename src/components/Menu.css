@@ -12,3 +12,7 @@
 .menu-divider { height: 1px; margin: var(--space-4) 0; background: var(--border-divider); }
 
 .ghost-icon.is-pressed { background: var(--state-pressed); }
+
+.menu-item:disabled { opacity: var(--opacity-disabled); cursor: default; background: none; }
+/* Storage note under the Data menu: Body/S, text/secondary, menu item padding */
+.menu-note { padding: var(--space-8) var(--space-12); color: var(--text-secondary); white-space: normal; }

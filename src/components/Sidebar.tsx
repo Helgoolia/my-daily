@@ -4,6 +4,8 @@ import {
   IconCalendarPlus,
   IconCheck,
   IconChevronDown,
+  IconDatabase,
+  IconDatabaseExport,
   IconEye,
   IconEyeOff,
   IconMoon,
@@ -34,12 +36,13 @@ type Props = {
   nameError: (taskId: string, name: string) => string | null;
   onHide: (taskId: string) => void;
   onDelete: (taskId: string) => void;
+  onExport: () => void;
 };
 
 const SORTS: Settings['sort'][] = ['most-tracked', 'recent', 'name'];
 
 /** Sidebar — Figma: Components / Sidebar (280, padding 24/16/16/16, gap 24). */
-export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete }: Props) {
+export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete, onExport }: Props) {
   const lang = data.settings.language;
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -194,12 +197,27 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
 
       <div className="preferences">
         <ThemeSwitch value={data.settings.theme} lang={lang} onChange={(theme) => onSettings({ theme })} />
+        <div className="preferences-right">
         <div className="segmented" role="radiogroup" aria-label={t(lang, 'language')}>
           {(['uk', 'en'] as const).map((l) => (
             <button key={l} type="button" role="radio" aria-checked={lang === l} className={`segment t-body-s-medium ${lang === l ? 'is-selected' : ''}`} onClick={() => onSettings({ language: l })}>
               {l === 'uk' ? 'UA' : 'EN'}
             </button>
           ))}
+        </div>
+        {/* Data menu (Figma: Menu · Data) — opens above, right edges aligned with the button */}
+        <MoreMenu
+          size="s"
+          label={t(lang, 'data')}
+          icon={<IconDatabase size={16} />}
+          align="end"
+          width={240}
+          entries={[
+            { kind: 'item', label: t(lang, 'exportData'), icon: <IconDatabaseExport size={16} />, disabled: data.entries.length === 0 && !data.timer, onSelect: onExport },
+            { kind: 'divider' },
+            { kind: 'note', text: t(lang, 'storageNote') },
+          ]}
+        />
         </div>
       </div>
     </aside>

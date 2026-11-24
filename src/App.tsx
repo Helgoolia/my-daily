@@ -19,6 +19,7 @@ import {
 import type { AppData } from './data/types';
 import { t, tf, weekdayShort } from './lib/i18n';
 import { allTimeTotal } from './lib/totals';
+import { download, exportCsv, exportFileName } from './lib/csv';
 import { formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useNow } from './lib/useAppData';
 
@@ -157,6 +158,11 @@ export default function App() {
           }}
           onHide={(id) => withUndo(id, (d) => hideTask(d, id, now), tf(lang, 'toastHidden', { name: nameOf(id) }))}
           onDelete={onDelete}
+          onExport={() => {
+            const file = exportFileName(now);
+            download(file, exportCsv(data, now));
+            showToast(tf(lang, 'toastExported', { file }));
+          }}
           onRename={onRename}
           nameError={nameError}
           onSettings={setSettings}
