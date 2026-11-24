@@ -34,7 +34,7 @@ export function Viewer({ code }: { code: string }) {
     }
   }, [lang, snap]);
   const cta = (
-    <a className="button button-secondary is-small t-body-s-medium" href="/">
+    <a className="button button-secondary is-small t-body-s-medium" href="/" target="_blank" rel="noopener">
       {t(lang, 'viewerCta')} <IconArrowRight size={16} aria-hidden />
     </a>
   );

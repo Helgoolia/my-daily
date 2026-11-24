@@ -259,7 +259,7 @@ const strings = {
     open: 'Відкрити',
     viewerSnapshot: 'Знімок · {when}',
     readOnly: 'лише перегляд',
-    viewerCta: 'Ведіть свій тиждень у My Daily',
+    viewerCta: 'Спробувати My Daily',
     viewerBroken: 'Посилання пошкоджене або неповне. Попросіть нове.',
     tooNarrowBody: 'My Daily поки працює у вікнах від 768 px.',
     saveFailed: 'Зміни не зберігаються: сховище браузера заповнене або заблоковане. Збережіть копію через ⛁.',
