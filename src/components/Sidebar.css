@@ -128,7 +128,7 @@
   cursor: pointer;
 }
 .secondary-button:hover { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
-.secondary-button:active,
+.secondary-button:active { border-color: var(--border-strong); background-image: linear-gradient(var(--state-pressed), var(--state-pressed)); } /* Figma Pressed */
 .secondary-button.is-pressed { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); } /* open menu = Hovered look */
 .menu {
   position: absolute;
