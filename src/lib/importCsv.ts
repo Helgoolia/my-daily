@@ -6,8 +6,8 @@ import { mondayOf, parseDuration, toISODate } from './time';
  * from other apps: `date, task, duration`, one row per time entry.
  * - Separator: comma or semicolon (Excel in Ukrainian locale saves ";"). Quotes per RFC 4180. BOM ok.
  * - Header optional and in any order: date/дата, task/задача/name/project, duration/тривалість/time/hours.
- * - Dates: 2026-11-09, 09.11.2026, 09/11/2026 (day first).
- * - Duration: 1:30, 1.5 / 1,5, 2, 90m, 2h30. "3,4" is ambiguous (3:24 decimal or 3:40 h.mm) — the
+ * - Dates: 2026-11-09, 09.11.2026, 09/11/2026, 09.11.26 (day first). A line with the other separator still reads.
+ * - Duration: 1:30, 1.5 / 1,5, 2, 45, 045, 446 (like a week cell), 90m, 2h30. "3,4" is ambiguous (3:24 decimal or 3:40 h.mm) — the
  *   review dialog asks once for the whole file (`comma` option); decimal by default.
  * Rows that can't be read are skipped and listed under "Needs attention".
  */
@@ -17,7 +17,7 @@ export type CommaMode = 'decimal' | 'hoursMinutes';
 export type ImportRow = { line: number; date: ISODate; task: string; minutes: number; ambiguous: boolean; rawDuration: string };
 export type ImportProblem = {
   line: number;
-  reason: 'date' | 'future' | 'duration' | 'task' | 'dayFull';
+  reason: 'date' | 'future' | 'duration' | 'task' | 'tooLong' | 'dayFull';
   raw: string;
 };
 
@@ -33,7 +33,8 @@ export type ImportAnalysis = {
   totalMinutes: number;
 };
 
-export const TEMPLATE_CSV = '﻿date,task,duration\r\n2026-11-09,Site Portfolio,1:30\r\n2026-11-10,Job search,0:45\r\n';
+// Figma File Drop: header + 3 examples — h:mm, a decimal, a weekend date
+export const TEMPLATE_CSV = '\uFEFFdate,task,duration\r\n2026-11-09,Site Portfolio,1:30\r\n2026-11-10,Job search,1.5\r\n2026-11-14,Reading,0:45\r\n';
 
 /** Splits CSV text into rows of cells. */
 export function parseCsv(text: string): string[][] {
@@ -58,7 +59,10 @@ export function parseCsv(text: string): string[][] {
     } else cell += c;
   }
   if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
-  return rows.filter((r) => r.some((c) => c.trim() !== ''));
+  // A hand-edited line may use the other separator (or both): if it has too few cells, split on either
+  return rows
+    .filter((r) => r.some((c) => c.trim() !== ''))
+    .map((r) => (r.length < 3 && /[,;]/.test(r.join('')) ? r.join(sep).split(/[,;]/) : r));
 }
 
 const count = (s: string, ch: string) => s.split(ch).length - 1;
@@ -73,8 +77,8 @@ export function parseDate(v: string): ISODate | null {
   const s = v.trim();
   let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
   const ymd = m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
-  m = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
-  const dmy = m ? [Number(m[3]), Number(m[2]), Number(m[1])] : null;
+  m = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2}|\d{4})$/);
+  const dmy = m ? [m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]), Number(m[2]), Number(m[1])] : null;
   const [y, mo, d] = ymd ?? dmy ?? [];
   if (!y) return null;
   const date = new Date(y, mo - 1, d);
@@ -87,6 +91,13 @@ function parseImportDuration(v: string, comma: CommaMode): { minutes: number; am
   if (m) return { minutes: Number(m[1]) * 60 + Number(m[2] ?? 0), ambiguous: false };
   m = s.match(/^(\d{1,4})(?:m|min|хв)$/);
   if (m) return { minutes: Number(m[1]), ambiguous: false };
+  // Whole numbers read like a week cell: 2 = 2:00, 45 = 0:45, 045 = 0:45, 446 = 4:46
+  m = s.match(/^\d{1,4}$/);
+  if (m) {
+    if (s.length <= 2) return { minutes: Number(s) <= 24 ? Number(s) * 60 : Number(s), ambiguous: false };
+    const mm = Number(s.slice(-2));
+    return mm <= 59 ? { minutes: Number(s.slice(0, -2)) * 60 + mm, ambiguous: false } : null;
+  }
   const d = parseDuration(s);
   if (!d.ok) return null;
   if (d.ambiguous) return { minutes: comma === 'decimal' ? d.ambiguous.decimal : d.ambiguous.hoursMinutes, ambiguous: true };
@@ -131,6 +142,7 @@ export function analyzeImport(text: string, data: AppData, now: Date, comma: Com
     if (!task) return problems.push({ line, reason: 'task', raw });
     if (!dur) return problems.push({ line, reason: 'duration', raw });
     if (dur.minutes <= 0) return; // empty day: nothing to add
+    if (dur.minutes > 24 * 60) return problems.push({ line, reason: 'tooLong', raw });
     const total = (dayTotals.get(date) ?? 0) + dur.minutes;
     if (total > 24 * 60 + 1e-9) return problems.push({ line, reason: 'dayFull', raw });
     dayTotals.set(date, total);

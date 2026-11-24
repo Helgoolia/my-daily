@@ -38,6 +38,7 @@ export function ImportDialog({
     if (!isCsv) { setFile(null); setError(tf(lang, 'notCsv', { file: f.name })); return; }
     setError(null);
     setFile({ name: f.name, text: await f.text() });
+    setReview(true); // nothing else to decide on this step — go straight to the review
   };
 
   const template = (
@@ -116,12 +117,7 @@ export function ImportDialog({
       actions={
         <>
           {template}
-          <div className="dialog-buttons">
-            {cancel}
-            <button type="button" className="button button-primary t-body-m-medium" disabled={!file} onClick={() => setReview(true)}>
-              {t(lang, 'continue')}
-            </button>
-          </div>
+          <div className="dialog-buttons">{cancel}</div>
         </>
       }
     >
@@ -134,7 +130,7 @@ export function ImportDialog({
         onDrop={(e) => { e.preventDefault(); setDragging(false); void take(e.dataTransfer.files[0]); }}
       >
         <IconDatabaseImport size={24} className="file-drop-icon" aria-hidden />
-        <span className="t-body-s-medium">{file ? file.name : t(lang, 'dropHere')}</span>
+        <span className="t-body-s-medium">{dragging ? t(lang, 'dropToUpload') : t(lang, 'dropHere')}</span>
         <span className="t-body-s file-drop-hint">{t(lang, 'importFormat')}</span>
         <input ref={input} type="file" accept=".csv,text/csv" hidden onChange={(e) => { void take(e.target.files?.[0]); e.target.value = ''; }} />
       </label>
@@ -162,6 +158,6 @@ function CommaChoice({ lang, value, onChange, example }: { lang: Lang; value: Co
 }
 
 function problemText(lang: Lang, p: ImportProblem): string {
-  const key = { date: 'problemDate', future: 'problemFuture', task: 'problemTask', duration: 'problemDuration', dayFull: 'problemDayFull' } as const;
+  const key = { date: 'problemDate', future: 'problemFuture', task: 'problemTask', duration: 'problemDuration', tooLong: 'problemTooLong', dayFull: 'problemDayFull' } as const;
   return t(lang, key[p.reason]);
 }

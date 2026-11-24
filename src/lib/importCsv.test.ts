@@ -18,6 +18,17 @@ describe('parseCsv', () => {
   });
 });
 
+describe('hand-made files', () => {
+  it('reads mixed separators, 2-digit years and whole-number durations like a cell', () => {
+    const csv = 'date,task,duration\n23/11/2026;Interview;1h36\n22.11.2026;My Daily;446\n2026-11-22,Job;25.7\n21/11/26;Web;6.45\n2026-11-21,Job,045\n2026-11-24,Job;1';
+    const a = analyzeImport(csv, emptyData(), now);
+    expect(a.rows.map((r) => [r.date, r.task, r.minutes])).toEqual([
+      ['2026-11-23', 'Interview', 96], ['2026-11-22', 'My Daily', 286], ['2026-11-21', 'Web', 387], ['2026-11-21', 'Job', 45], ['2026-11-24', 'Job', 60],
+    ]);
+    expect(a.problems.map((p) => p.reason)).toEqual(['tooLong']);
+  });
+});
+
 describe('parseDate', () => {
   it('reads ISO and day-first dates, rejects impossible ones', () => {
     expect(parseDate('2026-11-09')).toBe('2026-11-09');

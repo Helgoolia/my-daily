@@ -11,7 +11,8 @@
   text-align: center;
   cursor: pointer;
 }
-.file-drop:hover, .file-drop.is-dragging { border-color: var(--border-strong); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+/* Figma File Drop · Drag over (hover looks the same) */
+.file-drop:hover, .file-drop.is-dragging { border-color: var(--border-focus); background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
 .file-drop:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
 .file-drop.has-error { border-color: var(--border-error); }
 .file-drop-icon { color: var(--text-secondary); }
