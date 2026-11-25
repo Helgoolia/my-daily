@@ -10,6 +10,7 @@ import {
   IconDatabaseImport,
   IconEye,
   IconEyeOff,
+  IconMessageCircle,
   IconMoon,
   IconPencil,
   IconSun,
@@ -25,6 +26,9 @@ import { Logo } from './Logo';
 import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
 import { Tooltip } from './Tooltip';
+
+/** Testers' feedback form (Google Forms) — remove or move after the testing round */
+const FEEDBACK_URL = 'https://forms.gle/fEfrw2x4pav47YGN7';
 import './Sidebar.css';
 
 type Props = {
@@ -210,6 +214,12 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             </button>
           ))}
         </div>
+        {/* Feedback for the testing period: one click from every screen, opens the Google Form */}
+        <Tooltip label={t(lang, 'feedback')}>
+          <a className="ghost-icon is-small" href={FEEDBACK_URL} target="_blank" rel="noopener" aria-label={t(lang, 'feedback')}>
+            <IconMessageCircle size={16} />
+          </a>
+        </Tooltip>
         {/* Data menu (Figma: Menu · Data) — opens above, right edges aligned with the button */}
         <MoreMenu
           size="s"
