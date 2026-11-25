@@ -44,4 +44,7 @@
 /* Slot between the body and the actions (Figma: Dialog › Slot), gap 16 */
 .dialog-slot { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-24); }
 .button:disabled { opacity: var(--opacity-disabled); cursor: default; }
+/* Disabled = no hover or pressed feedback, for every button kind (as Button Icon already did) */
+.button-secondary:disabled { border-color: var(--border-default); background-image: none; }
+.button-primary:disabled, .button-destructive:disabled, .button-ghost:disabled { background-image: none; }
 .button-primary:disabled { background: var(--bg-disabled); color: var(--text-disabled); opacity: 1; } /* Primary Disabled */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { emptyData, type AppData } from '../data/types';
 import { exportCsv } from './csv';
-import { analyzeImport, applyImport, parseCsv, parseDate, undoImport } from './importCsv';
+import { analyzeImport, applyChoices, applyImport, findMerges, findOverlaps, parseCsv, parseDate, similarNames, undoImport } from './importCsv';
 
 const now = new Date(2026, 10, 24, 12, 0);
 
@@ -99,5 +99,38 @@ describe('applyImport / undoImport', () => {
     const a = analyzeImport(exportCsv(data, now), emptyData(), now);
     expect(a.problems).toEqual([]);
     expect(a.rows).toMatchObject([{ date: '2026-11-20', task: 'Exploring (CV, jobs, "Linkdn")', minutes: 95 }]);
+  });
+});
+
+describe('similar names (review)', () => {
+  it('finds the Figma examples', () => {
+    expect(similarNames('My Daily app', 'My dailyApp')).toBe(true);
+    expect(similarNames('My Daily app', 'Dayly app_Redesign')).toBe(true);
+    expect(similarNames('Job', 'Looking for a job')).toBe(true);
+    expect(similarNames('Job', 'Finding job')).toBe(true);
+    expect(similarNames('Site Portfolio', 'Interview Sigma')).toBe(false);
+    expect(similarNames('Job Hunting', 'Job searching')).toBe(false);
+  });
+
+  it('groups them, the target is the most used name or your existing task', () => {
+    const csv = 'date,task,duration\n2026-11-02,My Daily app,1\n2026-11-03,My Daily app,1\n2026-11-04,My dailyApp,1\n2026-11-05,Dayly app_Redesign,1\n2026-11-02,Finding job,1\n2026-11-03,Looking for a job,1';
+    const data = { ...emptyData(), tasks: [{ id: 'j', name: 'Job', hidden: false, createdAt: '' }] };
+    const a = analyzeImport(csv, data, now);
+    const m = findMerges(a.rows, data);
+    expect(m.map((g) => [g.target, g.names.sort(), g.rows])).toEqual([
+      ['My Daily app', ['Dayly app_Redesign', 'My dailyApp'], 2],
+      ['Job', ['Finding job', 'Looking for a job'], 2],
+    ]);
+    const merged = applyChoices(a, m, new Set(), new Set());
+    expect(merged.tasks).toBe(2);
+    const kept = applyChoices(a, m, new Set([m[1].id]), new Set([2]));
+    expect(kept.tasks).toBe(3); // My Daily app + Finding job + Looking for a job
+    expect(kept.rows.length).toBe(5);
+  });
+
+  it('flags rows that add to a day the task already has time on', () => {
+    const data = { ...emptyData(), tasks: [{ id: 's', name: 'Site Portfolio', hidden: false, createdAt: '' }], entries: [{ id: 'e', taskId: 's', date: '2026-11-09', minutes: 75, source: 'manual' as const }] };
+    const a = analyzeImport('date,task,duration\n2026-11-09,site portfolio,2:00\n2026-11-10,Site Portfolio,1:00', data, now);
+    expect(findOverlaps(a.rows, data)).toEqual([{ line: 2, date: '2026-11-09', task: 'Site Portfolio', existing: 75, adding: 120 }]);
   });
 });

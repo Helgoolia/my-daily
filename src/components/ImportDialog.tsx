@@ -1,9 +1,10 @@
-import { IconAlertTriangle, IconDatabaseImport, IconDownload } from '@tabler/icons-react';
+import { IconAlertTriangle, IconArrowsJoin, IconCheck, IconDatabaseImport, IconDownload } from '@tabler/icons-react';
 import { useRef, useState } from 'react';
 import type { AppData } from '../data/types';
 import { download } from '../lib/csv';
 import { monthRange, plural, t, tf, type Lang } from '../lib/i18n';
-import { analyzeImport, TEMPLATE_CSV, type CommaMode, type ImportAnalysis, type ImportProblem } from '../lib/importCsv';
+import { analyzeImport, applyChoices, findMerges, findOverlaps, TEMPLATE_CSV, type CommaMode, type ImportAnalysis, type ImportProblem } from '../lib/importCsv';
+import { formatMinutes } from '../lib/time';
 import { fromISODate } from '../lib/time';
 import { Dialog } from './Dialog';
 import './ImportDialog.css';
@@ -30,6 +31,10 @@ export function ImportDialog({
   const [review, setReview] = useState(false);
   const [comma, setComma] = useState<CommaMode>('decimal');
   const [dragging, setDragging] = useState(false);
+  // Review choices: merge groups kept separate, rows unticked
+  const [keep, setKeep] = useState<Set<string>>(new Set());
+  const [skip, setSkip] = useState<Set<number>>(new Set());
+  const toggle = <T,>(set: Set<T>, value: T, on: boolean) => { const next = new Set(set); if (on) next.add(value); else next.delete(value); return next; };
   const input = useRef<HTMLInputElement>(null);
 
   const take = async (f: File | undefined) => {
@@ -37,6 +42,8 @@ export function ImportDialog({
     const isCsv = /\.csv$/i.test(f.name) || f.type === 'text/csv';
     if (!isCsv) { setFile(null); setError(tf(lang, 'notCsv', { file: f.name })); return; }
     setError(null);
+    setKeep(new Set());
+    setSkip(new Set());
     setFile({ name: f.name, text: await f.text() });
     setReview(true); // nothing else to decide on this step — go straight to the review
   };
@@ -51,9 +58,16 @@ export function ImportDialog({
   );
 
   if (review && file) {
-    const a = analyzeImport(file.text, data, now, comma);
+    const raw = analyzeImport(file.text, data, now, comma);
+    const merges = findMerges(raw.rows, data);
+    const overlaps = findOverlaps(applyChoices(raw, merges, keep, new Set()).rows, data);
+    const a = applyChoices(raw, merges, keep, skip); // what Import will do
     const hours = Math.round(a.totalMinutes / 60);
-    const example = a.rows.find((r) => r.ambiguous);
+    const example = raw.rows.find((r) => r.ambiguous);
+    const day = (iso: string) =>
+      new Intl.DateTimeFormat(lang === 'uk' ? 'uk-UA' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).format(fromISODate(iso)).replace(/^(\p{L})/u, (c) => c.toUpperCase());
+    const manyOverlaps = overlaps.length > 5; // re-importing a whole file: one row for all of them
+    const attention = (raw.ambiguousCount > 0 ? 1 : 0) + raw.problems.length + (manyOverlaps ? 1 : overlaps.length);
     return (
       <Dialog
         title={t(lang, 'reviewImport')}
@@ -80,10 +94,51 @@ export function ImportDialog({
             </span>
           )}
         </div>
-        {(a.ambiguousCount > 0 || a.problems.length > 0) && (
+        {merges.length > 0 && (
           <section className="review-section">
-            <h3 className="t-overline review-label">{tf(lang, 'needsAttention', { n: String(a.ambiguousCount > 0 ? a.problems.length + 1 : a.problems.length) })}</h3>
-            {a.ambiguousCount > 0 && example && (
+            <h3 className="t-overline review-label">{t(lang, 'mergeSection')}</h3>
+            {merges.map((g) => {
+              const kept = keep.has(g.id);
+              return (
+                <div key={g.id} className={`list-row ${kept ? 'is-kept' : ''}`}>
+                  <IconArrowsJoin size={16} className="list-row-icon" aria-hidden />
+                  <span className="list-row-text">
+                    <span className="t-body-s merge-title">
+                      <span className="merge-from">{g.names.join(', ')}</span>{' '}
+                      {!kept && <span className="merge-to t-body-s-medium">→ {g.target}</span>}
+                    </span>
+                    <span className="t-body-s list-row-description">{kept ? t(lang, 'keptSeparate') : plural(lang, g.rows, 'entry')}</span>
+                  </span>
+                  <button type="button" className="text-action t-body-s-medium" onClick={() => setKeep(toggle(keep, g.id, !kept))}>
+                    {t(lang, kept ? 'mergeAgain' : 'keepSeparate')}
+                  </button>
+                </div>
+              );
+            })}
+          </section>
+        )}
+        {attention > 0 && (
+          <section className="review-section">
+            <h3 className="t-overline review-label">{tf(lang, 'needsAttention', { n: String(attention) })}</h3>
+            {manyOverlaps ? (
+              <Check
+                checked={overlaps.every((o) => !skip.has(o.line))}
+                onChange={(on) => setSkip(overlaps.reduce((s, o) => toggle(s, o.line, !on), skip))}
+                title={tf(lang, 'overlapMany', { rows: plural(lang, overlaps.length, 'row') })}
+                hint={t(lang, 'overlapManyHint')}
+              />
+            ) : (
+              overlaps.map((o) => (
+                <Check
+                  key={o.line}
+                  checked={!skip.has(o.line)}
+                  onChange={(on) => setSkip(toggle(skip, o.line, !on))}
+                  title={tf(lang, 'overlap', { date: day(o.date), task: o.task, had: formatMinutes(o.existing), add: formatMinutes(o.adding) })}
+                  hint={t(lang, 'overlapHint')}
+                />
+              ))
+            )}
+            {raw.ambiguousCount > 0 && example && (
               <div className="list-row">
                 <IconAlertTriangle size={16} className="list-row-icon" aria-hidden />
                 <span className="list-row-text">
@@ -93,7 +148,7 @@ export function ImportDialog({
                 <CommaChoice lang={lang} value={comma} onChange={setComma} example={example.rawDuration} />
               </div>
             )}
-            {a.problems.map((p) => (
+            {raw.problems.map((p) => (
               <div key={p.line} className="list-row">
                 <IconAlertTriangle size={16} className="list-row-icon" aria-hidden />
                 <span className="list-row-text">
@@ -166,4 +221,18 @@ function CommaChoice({ lang, value, onChange, example }: { lang: Lang; value: Co
 function problemText(lang: Lang, p: ImportProblem): string {
   const key = { date: 'problemDate', future: 'problemFuture', task: 'problemTask', duration: 'problemDuration', tooLong: 'problemTooLong', dayFull: 'problemDayFull' } as const;
   return t(lang, key[p.reason]);
+}
+
+/** Checkbox row (Figma Checkbox in a List Row): 16 px box, the whole row toggles */
+function Check({ checked, onChange, title, hint }: { checked: boolean; onChange: (on: boolean) => void; title: string; hint: string }) {
+  return (
+    <label className="list-row check-row">
+      <input type="checkbox" className="checkbox-input" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="checkbox" aria-hidden>{checked && <IconCheck size={12} stroke={3} />}</span>
+      <span className="list-row-text">
+        <span className="t-body-m">{title}</span>
+        <span className="t-body-s list-row-description">{hint}</span>
+      </span>
+    </label>
+  );
 }

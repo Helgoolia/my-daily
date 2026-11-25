@@ -33,7 +33,14 @@
 .list-row-description { color: var(--text-secondary); overflow-wrap: anywhere; }
 
 /* Review list can be long: the slot scrolls, the actions stay */
-.dialog:has(.summary-card) .dialog-slot { max-height: min(60vh, 440px); overflow: auto; }
+.dialog:has(.summary-card) .dialog-slot {
+  max-height: min(60vh, 440px);
+  overflow: auto;
+  /* The scrollbar hugs the dialog's right edge, like every other scroller (sidebar, picker list, page):
+     the slot runs into the 24 px side padding, the rows keep their width */
+  margin-right: calc(-1 * var(--space-24));
+  padding-right: calc(var(--space-24) - 4px);
+}
 
 /* Actions with a tertiary button on the left (Download template) */
 .dialog-actions:has(> .button-ghost) { justify-content: space-between; }
@@ -41,3 +48,29 @@
 .button-ghost { gap: var(--space-8); background: none; color: var(--text-primary); }
 .button-ghost svg { color: var(--text-primary); }
 .button-ghost:hover { background: var(--state-hover); }
+
+/* Merge rows (Figma List Row): old names in text/secondary, "→ result" in Medium primary — the arrow
+   and the result move to the next line together */
+.merge-from { color: var(--text-secondary); }
+.merge-to { white-space: nowrap; color: var(--text-primary); }
+.list-row.is-kept .merge-from { color: var(--text-primary); }
+.text-action { flex: none; height: 28px; padding: 0 var(--space-8); border: 0; border-radius: var(--radius-8); background: none; color: var(--text-secondary); cursor: pointer; }
+.text-action:hover { background: var(--state-hover); color: var(--text-primary); }
+.text-action:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+
+/* Checkbox (Figma): 16 px, radius 4; off = border/strong, on = bg/accent + check in text/on-accent */
+.check-row { cursor: pointer; }
+.checkbox-input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.checkbox {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--text-on-accent);
+}
+.checkbox-input:checked + .checkbox { border-color: transparent; background: var(--bg-accent); }
+.check-row:hover .checkbox { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
+.checkbox-input:focus-visible + .checkbox { outline: 2px solid var(--border-focus); outline-offset: 2px; }
