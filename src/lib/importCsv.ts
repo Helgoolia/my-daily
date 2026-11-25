@@ -217,3 +217,128 @@ export function undoImport(data: AppData): AppData {
   }
   return { ...data, entries, tasks: data.tasks.filter((t) => !dropTasks.has(t.id)), weeks, lastImport: null };
 }
+
+/* ── Review choices (Figma Review import): similar names merged, rows adding to a day that has time ── */
+
+const STOP = new Set(['my', 'a', 'an', 'the', 'for', 'of', 'to', 'and', 'мій', 'моя', 'моє', 'мої', 'для', 'та', 'і', 'й']);
+
+/** Words of a name: "Dayly app_Redesign" → dayly, app, redesign; "My dailyApp" → daily, app */
+export function nameWords(name: string): string[] {
+  return name
+    .replace(/([\p{Ll}])(\p{Lu})/gu, '$1 $2')
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w && !STOP.has(w));
+}
+
+function closeEnough(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.min(a.length, b.length) < 4 || Math.abs(a.length - b.length) > 1) return false;
+  // one typo: a single insert, delete or swap of letters
+  let i = 0;
+  while (i < a.length && a[i] === b[i]) i++;
+  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+  const [long, short] = a.length > b.length ? [a, b] : [b, a];
+  return long.slice(i + 1) === short.slice(i);
+}
+
+/**
+ * Similar = every word of the shorter name is in the longer one (allowing one typo per word):
+ * "Job" ~ "Looking for a job", "My Daily app" ~ "Dayly app_Redesign". Not every guess is right —
+ * that's what "Keep separate" is for.
+ */
+export function similarNames(a: string, b: string): boolean {
+  const compact = (n: string) => n.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  if (compact(a) && compact(a) === compact(b)) return true; // "My dailyApp" ~ "mydaily app"
+  const [x, y] = [nameWords(a), nameWords(b)];
+  if (!x.length || !y.length) return false;
+  const [small, large] = x.length <= y.length ? [x, y] : [y, x];
+  if (small.length === 1 && small[0].length < 3) return false;
+  return small.every((w) => large.some((v) => closeEnough(w, v)));
+}
+
+export type MergeGroup = {
+  id: string;
+  /** Names in the file that become `target` */
+  names: string[];
+  target: string;
+  /** Rows of the file that change name */
+  rows: number;
+};
+
+/**
+ * Groups of similar names. The target is the existing task when the group has one (time goes where it
+ * already is), otherwise the name used in most rows. Two existing tasks are never merged with each other.
+ */
+export function findMerges(rows: ImportRow[], data: AppData): MergeGroup[] {
+  const count = new Map<string, number>();
+  const shown = new Map<string, string>();
+  for (const r of rows) {
+    count.set(key(r.task), (count.get(key(r.task)) ?? 0) + 1);
+    if (!shown.has(key(r.task))) shown.set(key(r.task), r.task);
+  }
+  const existing = new Map(data.tasks.map((t) => [key(t.name), t.name]));
+  const keys = [...new Set([...count.keys(), ...existing.keys()])];
+  const parent = new Map(keys.map((k) => [k, k]));
+  const root = (k: string): string => (parent.get(k) === k ? k : root(parent.get(k)!));
+  for (let i = 0; i < keys.length; i++)
+    for (let j = i + 1; j < keys.length; j++) {
+      const [a, b] = [keys[i], keys[j]];
+      if (existing.has(a) && existing.has(b)) continue;
+      if (!count.has(a) && !count.has(b)) continue;
+      const name = (k: string) => shown.get(k) ?? existing.get(k)!;
+      if (similarNames(name(a), name(b))) parent.set(root(a), root(b));
+    }
+  const groups = new Map<string, string[]>();
+  for (const k of keys) groups.set(root(k), [...(groups.get(root(k)) ?? []), k]);
+  const out: MergeGroup[] = [];
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    const old = members.filter((k) => existing.has(k));
+    if (old.length > 1) continue; // would join two of your tasks — leave it to you
+    const inFile = members.filter((k) => count.has(k));
+    const targetKey = old[0] ?? [...inFile].sort((p, q) => count.get(q)! - count.get(p)! || p.length - q.length)[0];
+    const names = inFile.filter((k) => k !== targetKey);
+    if (!names.length) continue;
+    out.push({
+      id: [targetKey, ...names].join('|'),
+      names: names.map((k) => shown.get(k)!),
+      target: existing.get(targetKey) ?? shown.get(targetKey)!,
+      rows: names.reduce((s, k) => s + count.get(k)!, 0),
+    });
+  }
+  return out;
+}
+
+/** The import as it will happen: merged names, skipped rows left out, the summary recounted */
+export function applyChoices(a: ImportAnalysis, merges: MergeGroup[], keep: Set<string>, skip: Set<number>): ImportAnalysis {
+  const rename = new Map<string, string>();
+  for (const g of merges) if (!keep.has(g.id)) for (const n of g.names) rename.set(key(n), g.target);
+  const rows = a.rows.filter((r) => !skip.has(r.line)).map((r) => ({ ...r, task: rename.get(key(r.task)) ?? r.task }));
+  const dates = rows.map((r) => r.date).sort();
+  return {
+    ...a,
+    rows,
+    weeks: new Set(rows.map((r) => toISODate(mondayOf(new Date(r.date + 'T12:00'))))).size,
+    tasks: new Set(rows.map((r) => key(r.task))).size,
+    from: dates[0] ?? null,
+    to: dates[dates.length - 1] ?? null,
+    totalMinutes: rows.reduce((s, r) => s + r.minutes, 0),
+  };
+}
+
+export type Overlap = { line: number; date: ISODate; task: string; existing: number; adding: number };
+
+/** Rows that add time to a day where that task already has time (re-importing, or a second source) */
+export function findOverlaps(rows: ImportRow[], data: AppData): Overlap[] {
+  const ids = new Map(data.tasks.map((t) => [key(t.name), t]));
+  const had = new Map<string, number>();
+  for (const e of data.entries) had.set(`${e.taskId}|${e.date}`, (had.get(`${e.taskId}|${e.date}`) ?? 0) + e.minutes);
+  const out: Overlap[] = [];
+  for (const r of rows) {
+    const task = ids.get(key(r.task));
+    const existing = task ? had.get(`${task.id}|${r.date}`) ?? 0 : 0;
+    if (task && existing > 0) out.push({ line: r.line, date: r.date, task: task.name, existing, adding: r.minutes });
+  }
+  return out;
+}
