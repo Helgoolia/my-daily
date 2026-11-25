@@ -25,7 +25,7 @@ import { applyImport, undoImport } from './lib/importCsv';
 import { ImportDialog } from './components/ImportDialog';
 import { ForgottenTimer } from './components/ForgottenTimer';
 import { FORGOTTEN_AFTER_MIN, clock } from './lib/forgotten';
-import { allTimeTotal } from './lib/totals';
+import { allTimeTotal, minutesFor } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
 import { addDays, formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useMedia, useNow } from './lib/useAppData';
@@ -218,11 +218,16 @@ export default function App() {
     root.lang = data.settings.language;
   }, [data.settings.theme, data.settings.language]);
 
-  // Tab: idle "My Daily" + grey icon; running "1:25 · Site Portfolio" + brand icon (updates once a minute).
+  // Tab: idle "My Daily" + grey icon; running "2:15 · Site Portfolio" + brand icon (updates once a minute).
+  // The time is the running cell's value (the task's time on the session's day), the same number as in the grid:
+  // a session-only time appears nowhere in the UI and reads as a mistake.
   const runningTask = data.timer ? data.tasks.find((t) => t.id === data.timer!.taskId) : undefined;
   const runningMinutes = data.timer ? (now.getTime() - new Date(data.timer.startedAt).getTime()) / 60_000 : 0;
+  const runningCellMinutes = data.timer
+    ? minutesFor(data.entries, data.timer.taskId, toISODate(new Date(data.timer.startedAt))) + runningMinutes
+    : 0;
   // While Clarity records (tests only) the name stays out: it records <title> text unmasked
-  const title = runningTask ? `${formatMinutes(runningMinutes)} · ${recording ? 'My Daily' : runningTask.name}` : 'My Daily';
+  const title = runningTask ? `${formatMinutes(runningCellMinutes)} · ${recording ? 'My Daily' : runningTask.name}` : 'My Daily';
   useEffect(() => {
     document.title = title;
     const icon = document.getElementById('favicon') as HTMLLinkElement | null;
