@@ -33,7 +33,13 @@
 .list-row-description { color: var(--text-secondary); overflow-wrap: anywhere; }
 
 /* Review list can be long: the slot scrolls, the actions stay */
-.dialog:has(.summary-card) .dialog-slot { max-height: min(60vh, 440px); overflow: auto; }
+.dialog:has(.summary-card) .dialog-slot {
+  max-height: min(60vh, 440px);
+  overflow: auto;
+  /* The scrollbar sits in the dialog's side padding, 12 px clear of the rows and their actions */
+  margin-right: calc(-1 * var(--space-16));
+  padding-right: var(--space-16);
+}
 
 /* Actions with a tertiary button on the left (Download template) */
 .dialog-actions:has(> .button-ghost) { justify-content: space-between; }

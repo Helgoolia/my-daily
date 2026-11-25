@@ -129,9 +129,8 @@ export function SharePopover({ data, monday, now, lang, compact, disabled, onDow
 
   return (
     <>
-      {compact || disabled ? (
-        <Tooltip label={disabled ? t(lang, 'shareEmpty') : t(lang, 'share')} placement="below">{trigger}</Tooltip>
-      ) : trigger}
+      {/* A disabled control gets no hover feedback at all (no tooltip either), like › on this week */}
+      {compact && !disabled ? <Tooltip label={t(lang, 'share')} placement="below">{trigger}</Tooltip> : trigger}
       {open &&
         createPortal(
           <div
