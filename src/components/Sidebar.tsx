@@ -10,7 +10,7 @@ import {
   IconDatabaseImport,
   IconEye,
   IconEyeOff,
-  IconMessageCircle,
+  IconMessage,
   IconMoon,
   IconPencil,
   IconSun,
@@ -217,7 +217,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
         {/* Feedback for the testing period: one click from every screen, opens the Google Form */}
         <Tooltip label={t(lang, 'feedback')}>
           <a className="ghost-icon is-small" href={FEEDBACK_URL} target="_blank" rel="noopener" aria-label={t(lang, 'feedback')}>
-            <IconMessageCircle size={16} />
+            <IconMessage size={16} />
           </a>
         </Tooltip>
         {/* Data menu (Figma: Menu · Data) — opens above, right edges aligned with the button */}
