@@ -36,9 +36,10 @@
 .dialog:has(.summary-card) .dialog-slot {
   max-height: min(60vh, 440px);
   overflow: auto;
-  /* The scrollbar sits in the dialog's side padding, 12 px clear of the rows and their actions */
-  margin-right: calc(-1 * var(--space-16));
-  padding-right: var(--space-16);
+  /* The scrollbar hugs the dialog's right edge, like every other scroller (sidebar, picker list, page):
+     the slot runs into the 24 px side padding, the rows keep their width */
+  margin-right: calc(-1 * var(--space-24));
+  padding-right: calc(var(--space-24) - 4px);
 }
 
 /* Actions with a tertiary button on the left (Download template) */
