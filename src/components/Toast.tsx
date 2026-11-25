@@ -1,6 +1,7 @@
 import { IconX } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { MASK } from '../lib/clarity';
 import './Toast.css';
 
 export type ToastData = {
@@ -74,7 +75,7 @@ export function Toast({ toast, onClose }: { toast: ToastData | null; onClose: ()
           onFocus={() => setPaused(true)}
           onBlur={() => setPaused(false)}
         >
-          <span className="t-body-m">{toast.message}</span>
+          <span {...MASK} className="t-body-m">{toast.message}</span>
           {toast.onUndo && (
             <button
               type="button"

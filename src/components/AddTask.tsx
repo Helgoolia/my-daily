@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Settings } from '../data/types';
 import { t, tf } from '../lib/i18n';
+import { MASK } from '../lib/clarity';
 import type { Suggestion } from '../lib/taskInfo';
 
 /**
@@ -136,7 +137,7 @@ export function AddTask({
                 onMouseEnter={() => setActive(i)}
                 onClick={() => choose(i)}
               >
-                <span className="t-body-m-medium suggestion-name">{s.name}</span>
+                <span {...MASK} className="t-body-m-medium suggestion-name">{s.name}</span>
                 <span className="t-body-s suggestion-meta">{s.meta}</span>
               </div>
             ))}
@@ -145,6 +146,7 @@ export function AddTask({
                 id={`suggestion-${found.length}`}
                 role="option"
                 aria-selected={current === found.length}
+                {...MASK}
                 className={`menu-item suggestion-create t-body-m-medium ${current === found.length ? 'is-active' : ''}`}
                 onMouseEnter={() => setActive(found.length)}
                 onClick={() => choose(found.length)}

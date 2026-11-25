@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { MASK } from '../lib/clarity';
 import './Dialog.css';
 
 const FOCUSABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not([type="hidden"]):not(:disabled), [tabindex]:not([tabindex="-1"])';
@@ -47,9 +48,9 @@ export function Dialog({
   return createPortal(
     <div className="scrim" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
       <div ref={box} className="dialog" tabIndex={-1} style={{ width }} role="dialog" aria-modal="true" aria-labelledby="dialog-title" onKeyDown={onKey}>
-        <h2 id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
-        {description && <p className="t-body-m dialog-body">{description}</p>}
-        {children && <div className="dialog-slot">{children}</div>}
+        <h2 {...MASK} id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
+        {description && <p {...MASK} className="t-body-m dialog-body">{description}</p>}
+        {children && <div {...MASK} className="dialog-slot">{children}</div>}
         <div className="dialog-actions">{actions}</div>
       </div>
     </div>,
@@ -106,8 +107,8 @@ export function ConfirmDialog({
   return createPortal(
     <div className="scrim" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
       <div ref={box} className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-body" onKeyDown={onKey}>
-        <h2 id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
-        <p id="dialog-body" className="t-body-m dialog-body">{body}</p>
+        <h2 {...MASK} id="dialog-title" className="t-heading-m dialog-title">{title}</h2>
+        <p {...MASK} id="dialog-body" className="t-body-m dialog-body">{body}</p>
         <div className="dialog-actions">
           <button ref={cancel} type="button" className="button button-secondary t-body-m-medium" onClick={onCancel}>
             {cancelLabel}
