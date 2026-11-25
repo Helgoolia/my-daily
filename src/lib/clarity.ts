@@ -17,10 +17,11 @@ const TESTER_KEY = 'mydaily-tester';
 /** Spread on any element whose text can contain a task name. */
 export const MASK = { 'data-clarity-mask': 'true' } as const;
 
-const params = new URLSearchParams(location.search);
+const inBrowser = typeof location !== 'undefined';
+const params = new URLSearchParams(inBrowser ? location.search : '');
 
 export const recording =
-  import.meta.env.PROD && location.hostname === HOST && !params.has('demo') && !location.hash.startsWith('#s=');
+  inBrowser && import.meta.env.PROD && location.hostname === HOST && !params.has('demo') && !location.hash.startsWith('#s=');
 
 /** "Natasha K." → "natasha-k"; empty when nothing usable is left. */
 export function testerTag(raw: string): string {
