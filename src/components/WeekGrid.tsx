@@ -13,6 +13,7 @@ import { TimeCell } from './TimeCell';
 import { SharePopover } from './SharePopover';
 import { useMedia } from '../lib/useAppData';
 import { Tooltip } from './Tooltip';
+import { MASK } from '../lib/clarity';
 import './WeekGrid.css';
 
 type Props = {
@@ -202,7 +203,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
             validate={(name) => nameError(task.id, name)}
                   />
                 ) : (
-                  <span className="task-name t-body-m-medium" onDoubleClick={() => setEditing(task.id)}>
+                  <span {...MASK} className="task-name t-body-m-medium" onDoubleClick={() => setEditing(task.id)}>
                     {task.name}
                   </span>
                 )}

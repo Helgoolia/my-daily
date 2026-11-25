@@ -1,5 +1,6 @@
 import { cloneElement, useEffect, useRef, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
+import { MASK } from '../lib/clarity';
 import './Tooltip.css';
 
 type Placement = 'right-of-row' | 'right' | 'below' | 'below-start' | 'above';
@@ -95,7 +96,7 @@ export function Tooltip({
       {trigger}
       {pos &&
         createPortal(
-          <div className="tooltip t-body-s" role="tooltip" style={{ left: pos.left, top: pos.top, transform: pos.transform }}>
+          <div {...MASK} className="tooltip t-body-s" role="tooltip" style={{ left: pos.left, top: pos.top, transform: pos.transform }}>
             <span className="tooltip-label">{label}</span>
             {description && <span className="tooltip-description">{description}</span>}
           </div>,

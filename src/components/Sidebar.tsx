@@ -29,6 +29,7 @@ import { Tooltip } from './Tooltip';
 
 /** Testers' feedback form (Google Forms) — remove or move after the testing round */
 const FEEDBACK_URL = 'https://forms.gle/fEfrw2x4pav47YGN7';
+import { MASK } from '../lib/clarity';
 import './Sidebar.css';
 
 type Props = {
@@ -124,7 +125,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
           />
         ) : (
           // Double-click renames; a single click never does
-          <span className="task-item-name t-body-s-medium" onDoubleClick={() => setEditing(task.id)}>{task.name}</span>
+          <span {...MASK} className="task-item-name t-body-s-medium" onDoubleClick={() => setEditing(task.id)}>{task.name}</span>
         )}
         <span className="task-item-side">
           <span className="row-more">

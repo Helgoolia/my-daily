@@ -29,6 +29,7 @@ import { allTimeTotal } from './lib/totals';
 import { download, exportCsv, exportFileName } from './lib/csv';
 import { addDays, formatMinutes, fromISODate, mondayOf, toISODate } from './lib/time';
 import { useAppData, useMedia, useNow } from './lib/useAppData';
+import { recording } from './lib/clarity';
 import { LogoMark } from './components/Logo';
 
 const LAST_SEEN_KEY = 'mydaily-last-seen';
@@ -220,7 +221,8 @@ export default function App() {
   // Tab: idle "My Daily" + grey icon; running "1:25 · Site Portfolio" + brand icon (updates once a minute).
   const runningTask = data.timer ? data.tasks.find((t) => t.id === data.timer!.taskId) : undefined;
   const runningMinutes = data.timer ? (now.getTime() - new Date(data.timer.startedAt).getTime()) / 60_000 : 0;
-  const title = runningTask ? `${formatMinutes(runningMinutes)} · ${runningTask.name}` : 'My Daily';
+  // While Clarity records (tests only) the name stays out: it records <title> text unmasked
+  const title = runningTask ? `${formatMinutes(runningMinutes)} · ${recording ? 'My Daily' : runningTask.name}` : 'My Daily';
   useEffect(() => {
     document.title = title;
     const icon = document.getElementById('favicon') as HTMLLinkElement | null;
