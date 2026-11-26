@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { MASK } from '../lib/clarity';
 import { createPortal } from 'react-dom';
 
 /**
@@ -77,7 +78,7 @@ export function RenameInput({
       />
       {error && errPos &&
         createPortal(
-          <div className="tooltip t-body-s" role="alert" style={{ left: errPos.left, top: errPos.top, transform: 'translateY(-100%)' }}>
+          <div {...MASK} className="tooltip t-body-s" role="alert" style={{ left: errPos.left, top: errPos.top, transform: 'translateY(-100%)' }}>
             {error}
           </div>,
           document.body,
