@@ -1,6 +1,6 @@
-import { monthName, t, weekRange, weekdayShort } from './i18n';
+import { weekTitle, t, weekRange, weekdayShort } from './i18n';
 import { daySum, rowTotal, type Snapshot } from './snapshot';
-import { addDays, formatMinutes, weekOfMonth } from './time';
+import { addDays, formatMinutes } from './time';
 
 /**
  * The shared week as a PNG (Figma Flow 9: "the PNG uses the theme the author has on now; the preview
@@ -82,7 +82,7 @@ export async function drawWeek(s: Snapshot): Promise<HTMLCanvasElement> {
 
   // Header: "November · Week 2", "9–15 November 2026" (always with the year), week total on the right
   const weekTotal = s.rows.reduce((sum, r) => sum + rowTotal(r.days), 0);
-  text(`${monthName(lang, monday)} · ${t(lang, 'week')} ${weekOfMonth(monday)}`, PAD, PAD + 16, `700 24px ${TEXT}`, c.primary);
+  text(weekTitle(lang, monday), PAD, PAD + 16, `700 24px ${TEXT}`, c.primary);
   text(weekRange(lang, monday, days[6], new Date(s.at), true), PAD, PAD + 32 + 4 + 10, `400 13px ${TEXT}`, c.secondary);
   if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '1px';
   text(t(lang, 'weekTotal').toUpperCase(), W - PAD, PAD + 8, `500 12px ${TEXT}`, c.secondary, 'right');

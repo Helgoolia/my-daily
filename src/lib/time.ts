@@ -102,7 +102,15 @@ export function weekDays(monday: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 }
 
-/** Week number inside the month of its Monday: Nov 9–15, 2026 → 2 */
+/**
+ * A week belongs to the month of its Thursday — the month that has most of its days (as in ISO 8601):
+ * Nov 30 – Dec 6, 2026 is December's week 1, not November's week 5.
+ */
+export function weekMonthDay(monday: Date): Date {
+  return addDays(monday, 3);
+}
+
+/** Week number inside its month (see weekMonthDay): Nov 9–15, 2026 → 2; Nov 30 – Dec 6 → 1 */
 export function weekOfMonth(monday: Date): number {
-  return Math.ceil(monday.getDate() / 7);
+  return Math.ceil(weekMonthDay(monday).getDate() / 7);
 }

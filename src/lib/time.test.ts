@@ -45,5 +45,18 @@ describe('weeks', () => {
   it('numbers weeks inside the month', () => {
     expect(weekOfMonth(new Date(2026, 10, 9))).toBe(2);
     expect(weekOfMonth(new Date(2026, 10, 2))).toBe(1);
+    // A week belongs to the month of its Thursday
+    expect(weekOfMonth(new Date(2026, 10, 23))).toBe(4); // Nov 23–29
+    expect(weekOfMonth(new Date(2026, 10, 30))).toBe(1); // Nov 30 – Dec 6 → December
+    expect(weekOfMonth(new Date(2026, 11, 28))).toBe(5); // Dec 28 – Jan 3 → December
+    expect(weekOfMonth(new Date(2026, 9, 26))).toBe(5); // Oct 26 – Nov 1 → October
+  });
+});
+
+describe('weekTitle', () => {
+  it('names the month of the week’s Thursday', async () => {
+    const { weekTitle } = await import('./i18n');
+    expect(weekTitle('uk', new Date(2026, 10, 30))).toBe('Грудень · тиждень 1');
+    expect(weekTitle('en', new Date(2026, 10, 23))).toBe('November · Week 4');
   });
 });

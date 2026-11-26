@@ -1,8 +1,8 @@
 import { IconArrowBarRight, IconCalendarMinus, IconChevronLeft, IconChevronRight, IconPencil } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { AppData } from '../data/types';
-import { monthName, t, weekRange, weekdayShort } from '../lib/i18n';
-import { addDays, formatMinutes, toISODate, weekDays, weekOfMonth } from '../lib/time';
+import { weekTitle, t, weekRange, weekdayShort } from '../lib/i18n';
+import { addDays, formatMinutes, toISODate, weekDays } from '../lib/time';
 import { dayTotal, minutesFor, taskTotalInRange } from '../lib/totals';
 import { suggestions } from '../lib/taskInfo';
 import { weekRows } from '../data/actions';
@@ -107,7 +107,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
     data.entries.reduce((s, e) => (e.date === date ? s + e.minutes : s), 0) + (timer && runningDate === date ? runningSeconds / 60 : 0);
 
   return (
-    <section className="week" aria-label={`${monthName(lang, monday)} · ${t(lang, 'week')} ${weekOfMonth(monday)}`}>
+    <section className="week" aria-label={weekTitle(lang, monday)}>
       <header className="week-header">
         <div className="week-title">
           {onExpandSidebar && (
@@ -119,7 +119,7 @@ export function WeekGrid({ data, monday, now, onStart, onStop, onAddTask, onPick
           )}
           <div className="week-title-text">
           <h1 className="t-heading-l">
-            {monthName(lang, monday)} · {t(lang, 'week')} {weekOfMonth(monday)}
+            {weekTitle(lang, monday)}
           </h1>
           <p className="t-body-s week-range">{weekRange(lang, monday, addDays(monday, 6))}</p>
           </div>

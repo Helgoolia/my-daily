@@ -1,4 +1,5 @@
 import type { Settings } from '../data/types';
+import { weekMonthDay, weekOfMonth } from './time';
 
 export type Lang = Settings['language'];
 
@@ -336,6 +337,10 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 /** "November" / "Листопад" — standalone month name */
 export const monthName = (lang: Lang, d: Date) =>
   cap(new Intl.DateTimeFormat(locale(lang), { month: 'long' }).format(d));
+
+/** "November · Week 4" / "Листопад · тиждень 4" — the month of the week's Thursday (see weekMonthDay) */
+export const weekTitle = (lang: Lang, monday: Date) =>
+  `${monthName(lang, weekMonthDay(monday))} · ${t(lang, 'week')} ${weekOfMonth(monday)}`;
 
 /** "Mon" / "Пн" */
 export const weekdayShort = (lang: Lang, d: Date) =>

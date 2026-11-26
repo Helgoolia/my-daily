@@ -1,8 +1,8 @@
 import { IconArrowRight } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { monthName, t, tf, weekRange, weekdayShort, type Lang } from '../lib/i18n';
+import { weekTitle, t, tf, weekRange, weekdayShort, type Lang } from '../lib/i18n';
 import { daySum, decodeSnapshot, rowTotal, type Snapshot } from '../lib/snapshot';
-import { addDays, formatMinutes, weekOfMonth } from '../lib/time';
+import { addDays, formatMinutes } from '../lib/time';
 import { LogoMark } from './Logo';
 import './Dialog.css';
 import './WeekGrid.css';
@@ -30,7 +30,7 @@ export function Viewer({ code }: { code: string }) {
     document.documentElement.lang = lang;
     if (snap) {
       const m = new Date(snap.monday + 'T12:00');
-      document.title = `${monthName(lang, m)} · ${t(lang, 'week')} ${weekOfMonth(m)} — My Daily`;
+      document.title = `${weekTitle(lang, m)} — My Daily`;
     }
   }, [lang, snap]);
   const cta = (
@@ -67,7 +67,7 @@ export function Viewer({ code }: { code: string }) {
       <main className="week viewer-week" style={{ '--task-w': '280px', '--total-w': '100px' } as React.CSSProperties}>
         <header className="week-header">
           <div>
-            <h1 className="t-heading-l">{monthName(lang, monday)} · {t(lang, 'week')} {weekOfMonth(monday)}</h1>
+            <h1 className="t-heading-l">{weekTitle(lang, monday)}</h1>
             <p className="t-body-s week-range">{weekRange(lang, monday, days[6], new Date(snap.at), true)}</p>
           </div>
           <div className="week-summary">
