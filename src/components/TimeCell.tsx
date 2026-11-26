@@ -56,7 +56,15 @@ export function TimeCell({
   const today = kind === 'today';
   const value = (
     <span className={`t-numeric-m ${minutes < 1 && !running ? 'cell-subtle' : ''}`}>
-      {kind === 'past' && minutes <= 0 ? '—' : formatMinutes(minutes)}
+      {kind === 'past' && minutes <= 0 ? (
+        // Flow 15: hovering an empty past cell swaps the dash for a 0:00 placeholder (tells the format)
+        <>
+          <span className="cell-dash">—</span>
+          <span className="cell-zero" aria-hidden>0:00</span>
+        </>
+      ) : (
+        formatMinutes(minutes)
+      )}
       {running && <span className="seconds">:{String(seconds ?? 0).padStart(2, '0')}</span>}
     </span>
   );
