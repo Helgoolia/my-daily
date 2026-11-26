@@ -24,7 +24,7 @@ body {
 /* Button labels aren't text to select: a long press on a touch screen shouldn't highlight them */
 button { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-.layout { display: flex; height: 100%; overflow: hidden; }
+.layout { display: flex; height: 100%; overflow: hidden; cursor: default; } /* plain text (totals, headers) keeps the arrow: only editable time cells and fields show the text cursor (Flow 15) */
 /* < 768 (Figma: Too narrow · 600): logo mark, one line, one hint — centred */
 .too-narrow { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-8); min-height: 100%; padding: var(--space-24); text-align: center; }
 .too-narrow svg { margin-bottom: var(--space-16); }
