@@ -130,7 +130,10 @@
 .icon-button.is-primary { border-color: transparent; background-color: var(--bg-accent); color: var(--text-on-accent); }
 .icon-button.is-primary:hover { background-image: linear-gradient(var(--state-hover-on-accent), var(--state-hover-on-accent)); }
 
-/* Add task — Input Style=Ghost */
+/* Add task — Input Style=Ghost, and the «Add» button right of it while there is text (Flow 14) */
+.add-task-row { display: flex; align-items: center; gap: var(--space-8); margin-top: var(--space-16); }
+.add-task-row > .add-task { flex: 1; min-width: 0; margin-top: 0; }
+.add-task-button { flex: none; }
 .add-task {
   display: flex;
   align-items: center;
@@ -146,7 +149,16 @@
 .add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)) { background: var(--bg-control); }
 .add-task:not(:focus-within):has(.add-task-input:not(:placeholder-shown)):hover { background: linear-gradient(var(--state-hover), var(--state-hover)), var(--bg-control); }
 .add-task:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; background: none; }
-.add-task-icon { color: var(--text-secondary); flex: none; }
+.add-task-icon {
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.add-task-icon:hover { color: var(--text-primary); }
 .add-task-input {
   flex: 1;
   min-width: 0;

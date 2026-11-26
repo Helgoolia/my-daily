@@ -14,6 +14,10 @@ import type { Suggestion } from '../lib/taskInfo';
  * highlighted — no duplicate names. ↑↓ move, Enter picks, Esc closes the list (a second Esc clears).
  * The list sits 8 px from the field (the field keeps its focus ring while the list is open),
  * below it, or above when there is no room.
+ *
+ * Flow 14 (test 26.11: three clicks on «+», a typed name left in the field for minutes): while the field
+ * has text, a Primary M «Add» button sits right of the field and stays when focus leaves; «+» adds too
+ * (empty field: it focuses the field). After adding, the field keeps focus, empty, for the next task.
  */
 export function AddTask({
   lang,
@@ -32,6 +36,7 @@ export function AddTask({
   const [open, setOpen] = useState(true);
   const [active, setActive] = useState<number | null>(null); // null = the default item
   const form = useRef<HTMLFormElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
@@ -55,7 +60,7 @@ export function AddTask({
     setValue('');
     setActive(null);
     setOpen(true);
-    (document.activeElement as HTMLElement | null)?.blur(); // the new / returned row flashes instead
+    input.current?.focus(); // ready for the next task; the new / returned row flashes above
   };
   const choose = (index: number) => {
     if (index < found.length) onPick(found[index].id);
@@ -63,20 +68,37 @@ export function AddTask({
     reset();
   };
 
+  const submit = () => {
+    if (!value.trim()) return input.current?.focus();
+    if (listOpen) return choose(current);
+    onAdd(value);
+    reset();
+  };
+
   return (
+    <div className="add-task-row">
     <form
       ref={form}
+      id="add-task-form"
       className="add-task"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!value.trim()) return;
-        if (listOpen) return choose(current);
-        onAdd(value);
-        reset();
+        submit();
       }}
     >
-      <IconPlus size={16} className="add-task-icon" aria-hidden />
+      {/* Not a tab stop (the «Add» button is); mousedown keeps the field's focus and the list */}
+      <button
+        type="button"
+        className="add-task-icon"
+        tabIndex={-1}
+        aria-label={t(lang, 'add')}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={submit}
+      >
+        <IconPlus size={16} aria-hidden />
+      </button>
       <input
+        ref={input}
         className="add-task-input t-body-m"
         value={value}
         role="combobox"
@@ -158,5 +180,16 @@ export function AddTask({
           document.body,
         )}
     </form>
+      {value.trim() && (
+        <button
+          type="submit"
+          form="add-task-form"
+          className="button button-primary t-body-m-medium add-task-button"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {t(lang, 'add')}
+        </button>
+      )}
+    </div>
   );
 }
