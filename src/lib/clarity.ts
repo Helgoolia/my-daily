@@ -5,7 +5,8 @@
  *   (its link carries the snapshot, and its visitors aren't testers).
  * - Personal links `?t=natasha` tag the session as `tester = natasha`; the name is kept in localStorage,
  *   so a tester who comes back without `?t=` is still tagged, and `t` is taken out of the address.
- * - Task names never reach Clarity: elements that show them carry `data-clarity-mask` (MASK below),
+ * - The app root is unmasked (times, dates and labels are visible in recordings), while task names never reach
+ *   Clarity: elements that show them carry `data-clarity-mask` (MASK below),
  *   inputs are always masked by Clarity, and the tab title drops the task name while recording
  *   (Clarity records <title> text unmasked). aria-label and title attributes aren't recorded at all.
  */
@@ -54,6 +55,9 @@ type ClarityFn = ((...args: unknown[]) => void) & { q?: unknown[][] };
 export function startClarity() {
   const tester = rememberTester();
   if (!recording) return;
+  // Clarity's default (Balanced) masks digits too, so times and dates came out as ▫▫. Unmask the app and keep
+  // only task names masked (MASK on a node wins over the unmasked root; inputs stay masked in every mode).
+  document.getElementById('root')?.setAttribute('data-clarity-unmask', 'true');
   const w = window as unknown as { clarity?: ClarityFn };
   // Clarity's own snippet: queue calls until the script arrives
   w.clarity =
