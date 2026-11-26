@@ -211,8 +211,11 @@
   border: 0;
   background: none;
   color: inherit;
-  cursor: pointer;
+  cursor: text; /* Flow 15: reads like a spreadsheet cell you type into */
 }
+.cell-zero { display: none; color: var(--text-secondary); }
+.cell-hit:hover .cell-zero, .cell-hit:focus-visible .cell-zero { display: inline; }
+.cell-hit:hover .cell-dash, .cell-hit:focus-visible .cell-dash { display: none; }
 .cell-today .cell-hit { justify-content: flex-start; margin: 0 0 0 calc(-1 * var(--space-12)); padding: 0 var(--space-12); }
 /* Hovered = state layer over the cell (Figma Time Cell · Hovered); a running cell does nothing on hover */
 .cell:has(> .cell-hit:not(.is-running):not(.is-blocked):hover) { background-image: linear-gradient(var(--state-hover), var(--state-hover)); }
