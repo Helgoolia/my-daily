@@ -1,6 +1,6 @@
 import { emptyData, type AppData } from './types';
 
-const KEY = 'mydaily';
+export const KEY = 'mydaily';
 
 export type LoadResult = { data: AppData; error: string | null };
 

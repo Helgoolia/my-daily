@@ -253,6 +253,7 @@ export default function App() {
           data={data}
           now={now}
           onCollapse={() => (narrow ? setOverlayOpen(false) : setSettings({ sidebarCollapsed: true }))}
+          onHome={() => { setViewWeek(null); setOverlayOpen(false); }}
           onAddToWeek={(id) => {
             setOverlayOpen(false); // picking a task closes the floating sidebar
             update((d) => ensureInWeek(d, id, now));

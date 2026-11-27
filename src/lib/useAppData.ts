@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { demoData } from '../data/demo';
-import { load, save } from '../data/storage';
+import { KEY, load, save } from '../data/storage';
 import type { AppData } from '../data/types';
 
 /** App data + an update function that saves to localStorage. ?demo shows a sample week that is never saved. */
@@ -34,6 +34,19 @@ export function useAppData() {
     // eslint-disable-next-line react/set-state-in-effect
     if (!isDemo) setSaveFailed(!save(data));
   }, [data, isDemo]);
+
+  // Another tab of My Daily saved: take its data, so this tab doesn't later overwrite it with a stale copy
+  // (the browser fires 'storage' only in the other tabs, and only when the value really changed — no echo loop)
+  useEffect(() => {
+    if (isDemo) return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== KEY || e.newValue === null) return;
+      const { data: fresh, error } = load();
+      if (!error) setData(fresh);
+    };
+    addEventListener('storage', onStorage);
+    return () => removeEventListener('storage', onStorage);
+  }, [isDemo]);
 
   return { data, update, isDemo, saveFailed };
 }

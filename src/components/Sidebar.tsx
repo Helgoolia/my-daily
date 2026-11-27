@@ -40,6 +40,8 @@ type Props = {
   data: AppData;
   now: Date;
   onCollapse: () => void;
+  /** Logo click: back to this week */
+  onHome: () => void;
   onAddToWeek: (taskId: string) => void;
   onUnhide: (taskId: string) => void;
   onSettings: (patch: Partial<Settings>) => void;
@@ -56,7 +58,7 @@ type Props = {
 const SORTS: Settings['sort'][] = ['most-tracked', 'recent', 'name'];
 
 /** Sidebar — Figma: Components / Sidebar (280, padding 24/16/16/16, gap 24). */
-export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete, onExport, onImport, onUndoImport }: Props) {
+export function Sidebar({ data, now, onCollapse, onHome, onAddToWeek, onUnhide, onSettings, onRename, nameError, onHide, onDelete, onExport, onImport, onUndoImport }: Props) {
   const lang = data.settings.language;
   const [editing, setEditing] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -163,7 +165,18 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
   return (
     <aside className="sidebar" aria-label={t(lang, 'allTasks')}>
       <div className="sidebar-header">
-        <Logo />
+        {/* A real link, so middle-click / Ctrl+click opens My Daily in a new tab; a plain click returns to this week */}
+        <a
+          className="logo-link"
+          href={location.pathname + location.search}
+          onClick={(e) => {
+            if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            onHome();
+          }}
+        >
+          <Logo />
+        </a>
         {/* Right of the button: at the sidebar's edge it covers nothing (below would hide "All tasks") */}
         {/* Tooltip: just the verb; screen readers still get the full "Collapse sidebar" */}
         <Tooltip label={t(lang, 'collapse')} placement="right">
