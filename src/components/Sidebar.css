@@ -28,6 +28,7 @@
 }
 
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); height: 32px; }
+.logo-link { display: flex; border-radius: var(--radius-4); }
 .logo .logo-ring { fill: var(--brand-mark); }
 .logo .logo-dot { fill: var(--brand-mark-dot); }
 .logo .logo-word { fill: var(--text-primary); }
