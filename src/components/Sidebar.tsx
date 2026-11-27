@@ -27,9 +27,13 @@ import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
 import { Tooltip } from './Tooltip';
 
-/** Testers' feedback form (Google Forms) — remove or move after the testing round */
-const FEEDBACK_URL = 'https://forms.gle/fEfrw2x4pav47YGN7';
-import { MASK } from '../lib/clarity';
+import { MASK, recording } from '../lib/clarity';
+
+/** Feedback forms (Google Forms), one per interface language; both write to the same spreadsheet. */
+const FEEDBACK_URL = {
+  uk: 'https://forms.gle/fEfrw2x4pav47YGN7',
+  en: 'https://docs.google.com/forms/d/e/1FAIpQLSczgXm8pdl5M5VoYf42quxF_20z-repp4RoevAsXv7Y4Zj8MA/viewform',
+} as const;
 import './Sidebar.css';
 
 type Props = {
@@ -217,7 +221,7 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
         </div>
         {/* Feedback for the testing period: one click from every screen, opens the Google Form */}
         <Tooltip label={t(lang, 'feedback')}>
-          <a className="ghost-icon is-small" href={FEEDBACK_URL} target="_blank" rel="noopener" aria-label={t(lang, 'feedback')}>
+          <a className="ghost-icon is-small" href={FEEDBACK_URL[lang]} target="_blank" rel="noopener" aria-label={t(lang, 'feedback')}>
             <IconMessage size={16} />
           </a>
         </Tooltip>
@@ -235,6 +239,8 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             { kind: 'item', label: t(lang, 'undoImport'), icon: <IconArrowBackUp size={16} />, disabled: !data.lastImport, onSelect: onUndoImport },
             { kind: 'divider' },
             { kind: 'note', text: t(lang, 'storageNote') },
+            // Only where Clarity actually runs (production), so the note never claims recording that isn't happening
+            ...(recording ? [{ kind: 'note' as const, text: t(lang, 'recordingNote') }] : []),
           ]}
         />
         </div>
