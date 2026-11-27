@@ -27,7 +27,7 @@ import { MoreMenu } from './MoreMenu';
 import { RenameInput } from './RenameInput';
 import { Tooltip } from './Tooltip';
 
-import { MASK, recording } from '../lib/clarity';
+import { MASK } from '../lib/clarity';
 
 /** Feedback forms (Google Forms), one per interface language; both write to the same spreadsheet. */
 const FEEDBACK_URL = {
@@ -239,8 +239,6 @@ export function Sidebar({ data, now, onCollapse, onAddToWeek, onUnhide, onSettin
             { kind: 'item', label: t(lang, 'undoImport'), icon: <IconArrowBackUp size={16} />, disabled: !data.lastImport, onSelect: onUndoImport },
             { kind: 'divider' },
             { kind: 'note', text: t(lang, 'storageNote') },
-            // Only where Clarity actually runs (production), so the note never claims recording that isn't happening
-            ...(recording ? [{ kind: 'note' as const, text: t(lang, 'recordingNote') }] : []),
           ]}
         />
         </div>
